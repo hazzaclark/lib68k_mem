@@ -77,6 +77,36 @@ void DISABLE_TRACE_FLAG(uint8_t FLAG)
     ENABLED_FLAGS &= FLAG;
 }
 
+bool IS_TRACE_ENABLED(uint8_t FLAG)
+{
+    return (ENABLED_FLAGS & FLAG) != 0;
+}
+
+/////////////////////////////////////////////////////
+//              TRACE CONTROL MACROS
+/////////////////////////////////////////////////////
+
+#if DEFAULT_TRACE_FLAGS & TRACE_BASIC
+    #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
+        do { \
+            if (IS_TRACE_ENABLED(TRACE_BASIC)) \
+                printf("[TRACE] %c ADDR:0x%08x SIZE:%d VALUE:0x%08x\n", \
+                      (char)(OP), (ADDR), (SIZE), (VAL)); \
+        } while(0)
+#else
+    #define MEM_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
+#endif
+
+#if DEFAULT_TRACE_FLAGS & TRACE_VERBOSE
+    #define VERBOSE_TRACE(MSG, ...) \
+        do { \
+            if (IS_TRACE_ENABLED(TRACE_VERBOSE)) \
+                printf("[VERBOSE] %s:%d " MSG "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+        } while(0)
+#else
+    #define VERBOSE_TRACE(MSG, ...) ((void)0)
+#endif
+
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
