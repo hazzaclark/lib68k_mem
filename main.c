@@ -213,12 +213,23 @@ unsigned int M68K_READ_MEMORY_32(unsigned int ADDRESS)
     return MEMORY_READ(ADDRESS, MEM_SIZE_32);
 }
 
-
 int main(void)
 {
     printf("======================================\n");
     printf("HARRY CLARK - LIB68K MEMORY VALIDATOR\n");
     printf("======================================\n");
+
+    printf("TRACE INFORMATION\n");
+
+    // SHOW OFF THE BASIC INFORMATION DEFINEDB BY THE MACROS
+
+    ENABLED_FLAGS = M68K_OPT_BASIC;
+    SHOW_TRACE_STATUS();
+
+    printf("TESTING BASIC READ AND WRITES\n");
+
+    uint8_t TEST_8 = 0xFF;
+    printf("READ: 0x%02x\n", TEST_8);
 
     return 0;
 } 
