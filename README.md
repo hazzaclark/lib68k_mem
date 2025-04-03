@@ -1,2 +1,12 @@
 # lib68k_mem
 Standalone Reference for validating Memory in lib68k
+
+# Motive:
+
+The following aims to act as a little, subsection of lib68k, to be able to validate and verify the efficiency and accuracy in terms of the Memory read and writes of my 68k Emulator.
+
+This doesn't aim to be anything special outside of serving to provide aid in subsequent developments without breaking the main functionality of my stuff.
+
+If my commits on lib68k are anything to go by, I have been scratching my head and wrestling with the Memory logic for as long as I can remember/
+Therefore, this aims to put those quarms to rest
+
