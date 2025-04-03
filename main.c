@@ -147,14 +147,47 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
     return NULL;
 }
 
-static uint32_t MEM_READ(uint32_t ADDRESS, uint32_t SIZE)
+static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 {
     VERBOSE_TRACE("READING ADDRESS FROM 0x%08x (SIZE = %d)\n", ADDRESS, SIZE);
 
     // FIND THE ADDRESS AND IT'S RELEVANT SIZE IN ACCORDANCE WITH WHICH VALUE IS BEING PROC.
     M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
 
-    
+    if(MEM_BASE != NULL)
+    {
+        uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
+
+        if(OFFSET > (MEM_BASE->SIZE - (SIZE / 8)))
+        {
+            VERBOSE_TRACE("READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d\n", OFFSET, SIZE);
+            goto MALFORMED_READ;
+        }
+
+        uint8_t* MEM_PTR = MEM_BASE->BUFFER + OFFSET;
+        uint32_t MEM_RETURN = 0;
+
+        switch (SIZE)
+        {
+            case MEM_SIZE_32:
+                MEM_RETURN = *MEM_PTR++;
+                MEM_RETURN = (MEM_RETURN << 8) + *MEM_PTR++;
+
+            case MEM_SIZE_16:
+                MEM_RETURN = (MEM_RETURN << 8) + *MEM_PTR++;
+
+            case MEM_SIZE_8:
+                MEM_RETURN = (MEM_RETURN << 8) + *MEM_PTR;
+                MEM_TRACE(MEM_READ, ADDRESS, SIZE, MEM_RETURN);
+                return MEM_RETURN;
+        }
+    }
+
+    MALFORMED_READ:
+        fprintf(stderr, "BAD READ AT ADDRESS: 0x%0x\n", ADDRESS);
+        MEM_TRACE(MEM_INVALID_READ, ADDRESS, SIZE, ~(uint32_t)0);
+
+    return 0;
 }
 
 int main(void)
