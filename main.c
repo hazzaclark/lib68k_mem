@@ -107,6 +107,13 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     #define VERBOSE_TRACE(MSG, ...) ((void)0)
 #endif
 
+#define SHOW_TRACE_STATUS() \
+    printf("\nTRACE CONFIG:\n"); \
+    printf("  BASIC:   %s\n", IS_TRACE_ENABLED(TRACE_BASIC) ? "ENABLED" : "DISABLED"); \
+    printf("  VERBOSE: %s\n", IS_TRACE_ENABLED(TRACE_VERBOSE) ? "ENABLED" : "DISABLED"); \
+    printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(TRACE_DEVICES) ? "ENABLED" : "DISABLED"); \
+    printf("\n")
+
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
