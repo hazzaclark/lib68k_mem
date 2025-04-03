@@ -63,6 +63,23 @@ static unsigned MEM_NUM_BUFFERS = 0;
 static uint8_t ENABLED_FLAGS = M68K_OPT_FLAGS;
 static bool BUS_ERR = false;
 
+/////////////////////////////////////////////////////
+//            TRACE CONTROL FUNCTIONS
+/////////////////////////////////////////////////////
+
+void ENABLE_TRACE_FLAG(uint8_t FLAG)
+{
+    ENABLED_FLAGS |= FLAG;
+}
+
+void DISABLE_TRACE_FLAG(uint8_t FLAG)
+{
+    ENABLED_FLAGS &= FLAG;
+}
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
 int main(void)
 {
     printf("======================================\n");
