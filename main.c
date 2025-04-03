@@ -114,13 +114,15 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(TRACE_DEVICES) ? "ENABLED" : "DISABLED"); \
     printf("\n")
 
-/////////////////////////////////////////////////////
 
+
+/////////////////////////////////////////////////////
+//             MEMORY READ AND WRITE
 /////////////////////////////////////////////////////
 
 static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 {
-    VERBOSE_TRACE("ADDRESS 0x%08x", ADDRESS);
+    VERBOSE_TRACE("FINDING ADDRESS 0x%08x", ADDRESS);
 
     // ITERATE THROUGH ALL REGISTERED MEMORY BUFFERS
     for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
@@ -143,6 +145,16 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 
     VERBOSE_TRACE("NO BUFFER FOUND FOR ADDRESS: 0x%08x\n", ADDRESS);
     return NULL;
+}
+
+static uint32_t MEM_READ(uint32_t ADDRESS, uint32_t SIZE)
+{
+    VERBOSE_TRACE("READING ADDRESS FROM 0x%08x (SIZE = %d)\n", ADDRESS, SIZE);
+
+    // FIND THE ADDRESS AND IT'S RELEVANT SIZE IN ACCORDANCE WITH WHICH VALUE IS BEING PROC.
+    M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
+
+    
 }
 
 int main(void)
