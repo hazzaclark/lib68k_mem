@@ -191,6 +191,29 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
     return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+//                      THE MAIN MEAT AND POTATOES
+//          EACH OF THESE WILL REPRESENT AN UNSIGNE INT VALUE
+//                  FROM THERE, BEING SIGNED A DEFINER
+//          IN ACCORDANCE WITH THE ENUM (BASED ON THEIR BIT VALUE)
+////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned int M68K_READ_MEMORY_8(unsigned int ADDRESS)
+{
+    return MEMORY_READ(ADDRESS, MEM_SIZE_8);
+}
+
+unsigned int M68K_READ_MEMORY_16(unsigned int ADDRESS)
+{
+    return MEMORY_READ(ADDRESS, MEM_SIZE_16);
+}
+
+unsigned int M68K_READ_MEMORY_32(unsigned int ADDRESS)
+{
+    return MEMORY_READ(ADDRESS, MEM_SIZE_32);
+}
+
+
 int main(void)
 {
     printf("======================================\n");
