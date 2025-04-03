@@ -19,6 +19,7 @@
 
 #define     M68K_OPT_BASIC            (1 << 0)
 #define     M68K_OPT_VERB             (1 << 1)
+#define     M68K_OPT_DEVICE           (1 << 2)
 
 #define     M68K_OPT_FLAGS            (M68K_OPT_BASIC | M68K_OPT_VERB)
 
@@ -109,9 +110,9 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 
 #define SHOW_TRACE_STATUS() \
     printf("\nTRACE CONFIG:\n"); \
-    printf("  BASIC:   %s\n", IS_TRACE_ENABLED(TRACE_BASIC) ? "ENABLED" : "DISABLED"); \
-    printf("  VERBOSE: %s\n", IS_TRACE_ENABLED(TRACE_VERBOSE) ? "ENABLED" : "DISABLED"); \
-    printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(TRACE_DEVICES) ? "ENABLED" : "DISABLED"); \
+    printf("  BASIC:   %s\n", IS_TRACE_ENABLED(M68K_OPT_BASIC) ? "ENABLED" : "DISABLED"); \
+    printf("  VERBOSE: %s\n", IS_TRACE_ENABLED(M68K_OPT_VERB) ? "ENABLED" : "DISABLED"); \
+    printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(M68K_OPT_DEVICE) ? "ENABLED" : "DISABLED"); \
     printf("\n")
 
 
