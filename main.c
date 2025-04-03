@@ -33,3 +33,11 @@ typedef enum
     MEM_MOVE = 'O', 
 
 } M68K_MEM_OP;
+
+typedef enum
+{
+    MEM_SIZE_8 = 8,
+    MEM_SIZE_16 = 16,
+    MEM_SIZE_32 = 32
+
+} M68K_MEM_SIZE;
