@@ -15,12 +15,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define     M68K_MAX_BUFFERS          10
+
 #define     M68K_OPT_BASIC            (1 << 0)
 #define     M68K_OPT_VERB             (1 << 1)
 
 #define     M68K_OPT_FLAGS            (M68K_OPT_BASIC | M68K_OPT_VERB)
 
-// ENUM TO HOUSE ALL POSSIBLE READ AND WRITE TYPES
+/////////////////////////////////////////////////////
+//        BASE MEMORY VALIDATOR STRUCTURES
+/////////////////////////////////////////////////////
 
 typedef enum
 {
@@ -42,6 +46,22 @@ typedef enum
 
 } M68K_MEM_SIZE;
 
+typedef struct
+{
+    uint32_t BASE;
+    uint32_t SIZE;
+    uint8_t* BUFFER;
+
+} M68K_MEM_BUFFER;
+
+/////////////////////////////////////////////////////
+//              GLOBAL DEFINITIONS
+/////////////////////////////////////////////////////
+
+static M68K_MEM_BUFFER MEM_BUFFERS[M68K_MAX_BUFFERS];
+static unsigned MEM_NUM_BUFFERS = 0;
+static uint8_t ENABLED_FLAGS = M68K_OPT_FLAGS;
+static bool BUS_ERR = false;
 
 int main(void)
 {
