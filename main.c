@@ -148,6 +148,9 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
     return NULL;
 }
 
+// DEFINE A HELPER FUNCTION FOR BEING ABLE TO PLUG IN ANY RESPECTIVE
+// ADDRESS AND SIZE BASED ON THE PRE-REQUISITE SIZING OF THE ENUM
+
 static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 {
     VERBOSE_TRACE("READING ADDRESS FROM 0x%08x (SIZE = %d)\n", ADDRESS, SIZE);
@@ -164,6 +167,9 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
             VERBOSE_TRACE("READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d\n", OFFSET, SIZE);
             goto MALFORMED_READ;
         }
+
+        // THIS MEMORY POINTER WILL ALLOCATE ITSELF RELATIVE TO THE BUFFER
+        // AS WELL AS THE BIT SHIFT OFFSET THAT IS PRESENT WITH THE RESPECTIVE BIT VALUE
 
         uint8_t* MEM_PTR = MEM_BASE->BUFFER + OFFSET;
         uint32_t MEM_RETURN = 0;
@@ -189,6 +195,13 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
         MEM_TRACE(MEM_INVALID_READ, ADDRESS, SIZE, ~(uint32_t)0);
 
     return 0;
+}
+
+// NOW DO THE SAME FOR WRITES
+
+static uint32_t MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE)
+{
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
