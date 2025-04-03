@@ -219,8 +219,6 @@ int main(void)
     printf("HARRY CLARK - LIB68K MEMORY VALIDATOR\n");
     printf("======================================\n");
 
-    printf("TRACE INFORMATION\n");
-
     // SHOW OFF THE BASIC INFORMATION DEFINEDB BY THE MACROS
 
     ENABLED_FLAGS = M68K_OPT_BASIC;
@@ -229,7 +227,13 @@ int main(void)
     printf("TESTING BASIC READ AND WRITES\n");
 
     uint8_t TEST_8 = 0xFF;
-    printf("READ: 0x%02x\n", TEST_8);
+    printf("READ: 0x%02X\n", TEST_8);
+
+    uint16_t TEST_16 = 0xFFFF;
+    printf("READ: 0x%04X\n", TEST_16);
+
+    uint32_t TEST_32 = 0x13400000;
+    printf("READ: 0x%08X\n", TEST_32);
 
     return 0;
 } 
