@@ -15,6 +15,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define     M68K_OPT_BASIC            (1 << 0)
+#define     M68K_OPT_VERB             (1 << 1)
+
+#define     M68K_OPT_FLAGS            (M68K_OPT_BASIC | M68K_OPT_VERB)
+
 // ENUM TO HOUSE ALL POSSIBLE READ AND WRITE TYPES
 
 typedef enum
