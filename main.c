@@ -251,7 +251,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
     }
 
 MALFORMED:
-    fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%08x (SIZE: %d, VALUE: 0x%08x)\n", 
+    fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%08x (SIZE: %d, VALUE: 0x%08X)\n", 
             ADDRESS, SIZE, VALUE);
     MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
 }
@@ -271,7 +271,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
     BUF->BUFFER = malloc(SIZE);
     memset(BUF->BUFFER, 0, SIZE);
     
-    printf("MAPPED MEMORY: 0x%08x-0x%08x (%d bytes)\n", 
+    printf("MAPPED MEMORY: 0x%08x-0x%08X (%d BYTES)\n", 
            BASE, BASE + SIZE - 1, SIZE);
     MEM_TRACE(MEM_MAP, BASE, SIZE, 0);
 }
