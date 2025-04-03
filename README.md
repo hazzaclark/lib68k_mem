@@ -10,3 +10,9 @@ This doesn't aim to be anything special outside of serving to provide aid in sub
 If my commits on lib68k are anything to go by, I have been scratching my head and wrestling with the Memory logic for as long as I can remember/
 Therefore, this aims to put those quarms to rest
 
+
+## Features:
+
+Using the trace addressing space defined in lib68k, this isolated scheme allows for the validation of TRACE Level Addressing for handling pre-fetch
+
+Returns proper TRACE evidence of the Memory R/W, how it communciates with other areas, fallthroughs for Buffer overflows, etc
