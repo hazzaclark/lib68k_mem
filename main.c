@@ -41,3 +41,13 @@ typedef enum
     MEM_SIZE_32 = 32
 
 } M68K_MEM_SIZE;
+
+
+int main(void)
+{
+    printf("======================================\n");
+    printf("HARRY CLARK - LIB68K MEMORY VALIDATOR\n");
+    printf("======================================\n");
+
+    return 0;
+} 
