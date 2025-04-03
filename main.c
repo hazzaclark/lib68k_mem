@@ -115,7 +115,35 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     printf("\n")
 
 /////////////////////////////////////////////////////
+
 /////////////////////////////////////////////////////
+
+static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
+{
+    VERBOSE_TRACE("ADDRESS 0x%08x", ADDRESS);
+
+    // ITERATE THROUGH ALL REGISTERED MEMORY BUFFERS
+    for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
+    {
+        // GET A POINTER TO THE CURRENT MEMORY BUFFER
+        M68K_MEM_BUFFER* MEM_BASE = MEM_BUFFERS + INDEX;
+
+        // CHECK IF:
+        // 1. THE BUFFER EXISTS (NOT NULL)
+        // 2. THE REQUESTED ADDRESS IS >= THE BUFFER'S BASE ADDRESS
+        // 3. THE OFFSET FROM BASE ADDRESS IS WITHIN THE BUFFER'S SIZE
+
+        if((MEM_BASE->BUFFER != NULL) && (ADDRESS >= MEM_BASE->BASE) && ((ADDRESS - MEM_BASE->BASE) < MEM_BASE->SIZE))
+        {
+            // BUFFER FOUND - LOG DETAILS AND RETURN THE BUFFER POINTER
+            VERBOSE_TRACE("FOUND BUFFER: %d: BASE = 0x%08x, SIZE = %d\n", INDEX, MEM_BASE->BASE, MEM_BASE->SIZE);
+            return MEM_BASE;
+        }
+    }
+
+    VERBOSE_TRACE("NO BUFFER FOUND FOR ADDRESS: 0x%08x\n", ADDRESS);
+    return NULL;
+}
 
 int main(void)
 {
