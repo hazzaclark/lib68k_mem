@@ -199,9 +199,28 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 
 // NOW DO THE SAME FOR WRITES
 
-static uint32_t MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE)
+static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE)
 {
+
+}
+
+static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE)
+{
+    if(MEM_NUM_BUFFERS >= M68K_MAX_BUFFERS) 
+    {
+        fprintf(stderr, "CANNOT MAP - TOO MANY BUFFERS\n");
+        return;
+    }
+
+    M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[MEM_NUM_BUFFERS++];
+    BUF->BASE = BASE;
+    BUF->SIZE = SIZE;
+    BUF->BUFFER = malloc(SIZE);
+    memset(BUF->BUFFER, 0, SIZE);
     
+    printf("MAPPED MEMORY: 0x%08x-0x%08x (%d bytes)\n", 
+           BASE, BASE + SIZE - 1, SIZE);
+    MEM_TRACE(MEM_MAP, BASE, SIZE, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -237,10 +256,13 @@ int main(void)
     ENABLED_FLAGS = M68K_OPT_BASIC;
     SHOW_TRACE_STATUS();
 
+    MEMORY_MAP(0x00001000, 0x1000);
+
     printf("TESTING BASIC READ AND WRITES\n");
 
     uint8_t TEST_8 = 0xFF;
-    printf("READ: 0x%02X\n", TEST_8);
+    MEM_BUFFERS[0].BUFFER[0x00] = TEST_8;
+    printf("8-BIT  READ @ 0x1000: 0x%02x\n", M68K_READ_MEMORY_8(0x00001000));
 
     uint16_t TEST_16 = 0xFFFF;
     printf("READ: 0x%04X\n", TEST_16);
