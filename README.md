@@ -1,5 +1,5 @@
 # lib68k_mem
-Standalone Reference for validating Memory in lib68k
+Standalone Reference for validating Memory Functionality in lib68k
 
 # Motive:
 
