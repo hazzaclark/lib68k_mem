@@ -52,6 +52,7 @@ typedef struct
     uint32_t BASE;
     uint32_t SIZE;
     uint8_t* BUFFER;
+    bool WRITE;
 
 } M68K_MEM_BUFFER;
 
@@ -199,9 +200,22 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 
 // NOW DO THE SAME FOR WRITES
 
-static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE)
+static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 {
+    M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
 
+    if(MEM_BASE != NULL)
+    {
+        uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
+
+        if(!MEM_BASE->WRITE) goto MALFORMED;
+
+        if(OFFSET > (MEM_BASE->SIZE - (SIZE / 8))) goto MALFORMED;
+    }
+
+    MALFORMED:
+        fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%0x\n", ADDRESS, SIZE, VALUE);
+        MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
 }
 
 static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE)
@@ -261,7 +275,6 @@ int main(void)
     printf("TESTING BASIC READ AND WRITES\n");
 
     uint8_t TEST_8 = 0xFF;
-    MEM_BUFFERS[0].BUFFER[0x00] = TEST_8;
     printf("8-BIT  READ @ 0x1000: 0x%02x\n", M68K_READ_MEMORY_8(0x00001000));
 
     uint16_t TEST_16 = 0xFFFF;
