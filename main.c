@@ -62,6 +62,7 @@ typedef struct
 
 static M68K_MEM_BUFFER MEM_BUFFERS[M68K_MAX_BUFFERS];
 static unsigned MEM_NUM_BUFFERS = 0;
+static bool TRACE_ENABLED;
 static uint8_t ENABLED_FLAGS = M68K_OPT_FLAGS;
 static bool BUS_ERR = false;
 
@@ -313,6 +314,29 @@ void M68K_WRITE_MEMORY_32(unsigned int ADDRESS, uint32_t VALUE)
     MEMORY_WRITE(ADDRESS, MEM_SIZE_32, VALUE);
 }
 
+unsigned int M68K_READ_IMM_16(unsigned int ADDRESS)
+{
+    bool TRACE = TRACE_ENABLED;
+    TRACE_ENABLED = false;
+
+    unsigned int RESULT = M68K_READ_MEMORY_16(ADDRESS);
+    TRACE_ENABLED = TRACE;
+
+    return RESULT;
+}
+
+unsigned int M68K_READ_IMM_32(unsigned int ADDRESS)
+{
+    bool TRACE = TRACE_ENABLED;
+    TRACE_ENABLED = false;
+
+    unsigned int RESULT = M68K_READ_MEMORY_32(ADDRESS);
+    TRACE_ENABLED = TRACE;
+
+    return RESULT;
+}
+
+
 int main(void) 
 {
     printf("======================================\n");
@@ -340,6 +364,13 @@ int main(void)
     M68K_WRITE_MEMORY_32(0x1020, TEST_32);
     uint32_t READ_32 = M68K_READ_MEMORY_32(0x1020);
     printf("32-BIT: WROTE: 0x%08X, READ: 0x%08X\n", TEST_32, READ_32);
+
+    uint16_t IMM_16 = 0xFFFF;
+    M68K_WRITE_MEMORY_16(0x1000, IMM_16);
+    uint16_t IMM_READ_16 = M68K_READ_IMM_16(0x1000);
+    printf("16-BIT IMM: WROTE: 0x%04X, READ: 0x%04X\n", IMM_16, IMM_READ_16);
+
+
 
     return 0;
 }
