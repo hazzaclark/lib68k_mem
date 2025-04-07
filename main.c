@@ -35,7 +35,6 @@ typedef enum
     MEM_INVALID_WRITE = 'w',
     MEM_MAP = 'M',
     MEM_UNMAP = 'U',
-    MEM_MOVE = 'O', 
 
 } M68K_MEM_OP;
 
