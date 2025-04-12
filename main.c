@@ -251,7 +251,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
     }
 
 MALFORMED:
-    fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%08x (SIZE: %d, VALUE: 0x%08X)\n", 
+    fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%08x (SIZE: 0x%02x, VALUE: 0x%08X)\n", 
             ADDRESS, SIZE, VALUE);
     MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
 }
