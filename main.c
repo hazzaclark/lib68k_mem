@@ -23,6 +23,9 @@
 
 #define     M68K_OPT_FLAGS            (M68K_OPT_BASIC | M68K_OPT_VERB)
 
+#define     M68K_MAX_ADDR_START             0xFFFFFFF0
+#define     M68K_MAX_ADDR_END               0xFFFFFFFF
+
 /////////////////////////////////////////////////////
 //        BASE MEMORY VALIDATOR STRUCTURES
 /////////////////////////////////////////////////////
@@ -155,6 +158,14 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 {
     VERBOSE_TRACE("READING ADDRESS FROM 0x%08x (SIZE = %d)\n", ADDRESS, SIZE);
+
+    // BOUND CHECKS FOR INVALID ADDRESSING
+
+    if(ADDRESS == M68K_MAX_ADDR_START && ADDRESS <= M68K_MAX_ADDR_END)
+    {
+        VERBOSE_TRACE("ATTEMPT TO READ FROM RESERVED ADDRESS RANGE: 0x%08X\n", ADDRESS);
+        goto MALFORMED_READ;
+    }
 
     // FIND THE ADDRESS AND IT'S RELEVANT SIZE IN ACCORDANCE WITH WHICH VALUE IS BEING PROC.
     M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
