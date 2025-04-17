@@ -289,7 +289,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //                      THE MAIN MEAT AND POTATOES
-//          EACH OF THESE WILL REPRESENT AN UNSIGNE INT VALUE
+//          EACH OF THESE WILL REPRESENT AN UNSIGNED INT VALUE
 //                  FROM THERE, BEING SIGNED A DEFINER
 //          IN ACCORDANCE WITH THE ENUM (BASED ON THEIR BIT VALUE)
 ////////////////////////////////////////////////////////////////////////////////////////
