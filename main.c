@@ -112,13 +112,27 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     #define VERBOSE_TRACE(MSG, ...) ((void)0)
 #endif
 
+#if M68K_JUMP_HOOK
+	#if M68K_JUMP_HOOK == M68K_OPT_ON
+		#define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR)			\
+			do  												\
+			{   												\
+				printf("[JUMP TRACE] TO: 0x%08x FROM: 0x%08x\n" \
+						(ADDR), (FROM_ADDR));					\
+			} while(0)
+	#else
+		#define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
+	#endif
+#else
+	#define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
+#endif
+
 #define SHOW_TRACE_STATUS() \
     printf("\nTRACE CONFIG:\n"); \
     printf("  BASIC:   %s\n", IS_TRACE_ENABLED(M68K_OPT_BASIC) ? "ENABLED" : "DISABLED"); \
     printf("  VERBOSE: %s\n", IS_TRACE_ENABLED(M68K_OPT_VERB) ? "ENABLED" : "DISABLED"); \
     printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(M68K_OPT_DEVICE) ? "ENABLED" : "DISABLED"); \
     printf("\n")
-
 
 
 /////////////////////////////////////////////////////
@@ -289,7 +303,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //                      THE MAIN MEAT AND POTATOES
-//          EACH OF THESE WILL REPRESENT AN UNSIGNED INT VALUE
+//          EACH OF THESE WILL REPRESENT AN UNSIGNE INT VALUE
 //                  FROM THERE, BEING SIGNED A DEFINER
 //          IN ACCORDANCE WITH THE ENUM (BASED ON THEIR BIT VALUE)
 ////////////////////////////////////////////////////////////////////////////////////////
