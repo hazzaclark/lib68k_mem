@@ -112,19 +112,13 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     #define VERBOSE_TRACE(MSG, ...) ((void)0)
 #endif
 
-#if M68K_JUMP_HOOK
-	#if M68K_JUMP_HOOK == M68K_OPT_ON
-		#define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR)			\
-			do  												\
-			{   												\
-				printf("[JUMP TRACE] TO: 0x%08x FROM: 0x%08x\n" \
-						(ADDR), (FROM_ADDR));					\
-			} while(0)
-	#else
-		#define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
-	#endif
+#if M68K_JUMP_HOOK == M68K_OPT_ON
+    #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) \
+        do { \
+            printf("[JUMP TRACE] TO: 0x%08x FROM: 0x%08x\n", (ADDR), (FROM_ADDR)); \
+        } while(0)
 #else
-	#define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
+    #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
 #endif
 
 #define SHOW_TRACE_STATUS() \
@@ -134,6 +128,14 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(M68K_OPT_DEVICE) ? "ENABLED" : "DISABLED"); \
     printf("\n")
 
+    void M68K_JUMP(unsigned NEW_PC)
+    {
+        static uint32_t CURRENT_PC = 0x1000; // Start PC
+        uint32_t FROM_ADDR = CURRENT_PC;
+        CURRENT_PC = NEW_PC;
+        
+        M68K_BASE_JUMP_HOOK(NEW_PC, FROM_ADDR);
+    }
 
 /////////////////////////////////////////////////////
 //             MEMORY READ AND WRITE
@@ -360,6 +362,14 @@ unsigned int M68K_READ_IMM_32(unsigned int ADDRESS)
     return RESULT;
 }
 
+void TEST_JUMPS(void)
+{
+    M68K_JUMP(0x2000);
+    M68K_JUMP(0x3001);
+    M68K_JUMP(0x2000);    
+    M68K_JUMP(0x2000);
+    M68K_JUMP(0x0000);
+}
 
 int main(void) 
 {
@@ -394,7 +404,7 @@ int main(void)
     uint16_t IMM_READ_16 = M68K_READ_IMM_16(0x1000);
     printf("16-BIT IMM: WROTE: 0x%04X, READ: 0x%04X\n", IMM_16, IMM_READ_16);
 
-
+    TEST_JUMPS();
 
     return 0;
 }
