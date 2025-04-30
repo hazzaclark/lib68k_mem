@@ -26,6 +26,15 @@
 #define     M68K_MAX_ADDR_START             0xFFFFFFF0
 #define     M68K_MAX_ADDR_END               0xFFFFFFFF
 
+// THESE WILL OF COURSE BE SUBSTITUTED FOR THEIR RESPECTIVE METHOD OF
+// ACCESS WITHIN THE EMULATOR ITSELF
+
+static unsigned int M68K_T0 = 0;
+static unsigned int M68K_T1 = 1;
+
+#define         M68K_T0_SHIFT                   (1 << 3)
+#define         M68K_T1_SHIFT                   (1 << 4)
+
 /////////////////////////////////////////////////////
 //        BASE MEMORY VALIDATOR STRUCTURES
 /////////////////////////////////////////////////////
@@ -122,12 +131,22 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
 #endif
 
+#define SET_TRACE_FLAGS(T0, T1) \
+        do {    \
+            M68K_T0 = (T0); \
+            M68K_T1 = (T1); \
+            (T0) ? ENABLE_TRACE_FLAG(M68K_T0_SHIFT) : DISABLE_TRACE_FLAG(M68K_T0_SHIFT); \
+            (T1) ? ENABLE_TRACE_FLAG(M68K_T1_SHIFT) : DISABLE_TRACE_FLAG(M68K_T1_SHIFT); \
+    } while(0)
+
 #define SHOW_TRACE_STATUS() \
     printf("\nTRACE CONFIG:\n"); \
     printf("  BASIC:   %s\n", IS_TRACE_ENABLED(M68K_OPT_BASIC) ? "ENABLED" : "DISABLED"); \
     printf("  VERBOSE: %s\n", IS_TRACE_ENABLED(M68K_OPT_VERB) ? "ENABLED" : "DISABLED"); \
     printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(M68K_OPT_DEVICE) ? "ENABLED" : "DISABLED"); \
     printf("\n")
+
+#define CHECK_TRACE_CONDITION() (M68K_T0 || M68K_T1)
 
 /////////////////////////////////////////////////////
 //             MEMORY READ AND WRITE
@@ -360,8 +379,9 @@ int main(void)
     printf("HARRY CLARK - LIB68K MEMORY VALIDATOR\n");
     printf("======================================\n");
 
-    ENABLED_FLAGS = M68K_OPT_BASIC;
+    ENABLED_FLAGS = M68K_OPT_BASIC | M68K_T1_SHIFT;
     SHOW_TRACE_STATUS();
+    SET_TRACE_FLAGS(1, 0);
 
     MEMORY_MAP(0x00001000, 0x1000, true);
 
