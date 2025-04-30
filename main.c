@@ -88,7 +88,7 @@ void ENABLE_TRACE_FLAG(uint8_t FLAG)
 
 void DISABLE_TRACE_FLAG(uint8_t FLAG)
 {
-    ENABLED_FLAGS &= FLAG;
+    ENABLED_FLAGS &= ~FLAG;
 }
 
 bool IS_TRACE_ENABLED(uint8_t FLAG)
@@ -100,10 +100,10 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 //              TRACE CONTROL MACROS
 /////////////////////////////////////////////////////
 
-#if DEFAULT_TRACE_FLAGS & TRACE_BASIC
+#if DEFAULT_TRACE_FLAGS & M68K_OPT_BASIC
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
         do { \
-            if (IS_TRACE_ENABLED(TRACE_BASIC)) \
+            if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
                 printf("[TRACE] %c ADDR:0x%08x SIZE:%d VALUE:0x%08x\n", \
                       (char)(OP), (ADDR), (SIZE), (VAL)); \
         } while(0)
@@ -144,6 +144,10 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     printf("  BASIC:   %s\n", IS_TRACE_ENABLED(M68K_OPT_BASIC) ? "ENABLED" : "DISABLED"); \
     printf("  VERBOSE: %s\n", IS_TRACE_ENABLED(M68K_OPT_VERB) ? "ENABLED" : "DISABLED"); \
     printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(M68K_OPT_DEVICE) ? "ENABLED" : "DISABLED"); \
+    printf("  T0 FLAG:    %s (SHIFT: 0x%02X)\n", M68K_T0 ? "ON" : "OFF", M68K_T0_SHIFT); \
+    printf("  T1 FLAG:    %s  (SHIFT: 0x%02X)\n", M68K_T1 ? "ON" : "OFF", M68K_T1_SHIFT); \
+    printf("  T0 ACTIVE:  %s\n", IS_TRACE_ENABLED(M68K_T0_SHIFT) ? "YES" : "NO"); \
+    printf("  T1 ACTIVE:  %s\n", IS_TRACE_ENABLED(M68K_T1_SHIFT) ? "YES" : "NO"); \
     printf("\n")
 
 #define CHECK_TRACE_CONDITION() (M68K_T0 || M68K_T1)
