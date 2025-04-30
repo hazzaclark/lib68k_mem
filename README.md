@@ -43,6 +43,9 @@ In a similar vein to [lib68k](https://github.com/hazzaclark/lib68k), for the sak
 Simply use the oscillating macros of ``M68K_OPT_ON`` or ``M68K_OPT_OFF`` should you ever need more or less debugging information
 
 ```C
+
+#define         CHECK_TRACE_CONDITION()         (IS_TRACE_ENABLED(M68K_T0_SHIFT) || IS_TRACE_ENABLED(M68K_T1_SHIFT))
+
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 
 #if MEM_TRACE_HOOK == M68K_OPT_ON
