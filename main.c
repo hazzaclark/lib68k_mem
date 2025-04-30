@@ -26,6 +26,9 @@
 #define     M68K_MAX_ADDR_START             0xFFFFFFF0
 #define     M68K_MAX_ADDR_END               0xFFFFFFFF
 
+#define     M68K_OPT_OFF		0
+#define     M68K_OPT_ON			1
+
 // THESE WILL OF COURSE BE SUBSTITUTED FOR THEIR RESPECTIVE METHOD OF
 // ACCESS WITHIN THE EMULATOR ITSELF
 
@@ -100,9 +103,15 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 //              TRACE CONTROL MACROS
 /////////////////////////////////////////////////////
 
-#define CHECK_TRACE_CONDITION() (IS_TRACE_ENABLED(M68K_T0_SHIFT) || IS_TRACE_ENABLED(M68K_T1_SHIFT))
+#define         CHECK_TRACE_CONDITION()         (IS_TRACE_ENABLED(M68K_T0_SHIFT) || IS_TRACE_ENABLED(M68K_T1_SHIFT))
 
-#if DEFAULT_TRACE_FLAGS & M68K_OPT_BASIC
+/////////////////////////////////////////////////////
+//                 HOOK OPTIONS
+/////////////////////////////////////////////////////
+
+#define         MEM_TRACE_HOOK                  M68K_OPT_ON
+
+#if MEM_TRACE_HOOK == M68K_OPT_ON
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
@@ -384,7 +393,7 @@ int main(void)
     printf("======================================\n");
 
     ENABLED_FLAGS = M68K_OPT_FLAGS;
-    SET_TRACE_FLAGS(0, 1);
+    SET_TRACE_FLAGS(1, 0);
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x00001000, 0x1000, true);
