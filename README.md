@@ -1,7 +1,7 @@
 # lib68k_mem
 Standalone Reference for validating Memory Functionality in lib68k
 
-![Screenshot_20250403_223606](https://github.com/user-attachments/assets/661411ea-4057-42f1-9155-7e948ba491fc)
+![image](https://github.com/user-attachments/assets/f265aea1-152c-4cf8-b390-8cdf80f235a6)
 
 # Motive:
 
