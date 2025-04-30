@@ -17,11 +17,11 @@
 
 #define     M68K_MAX_BUFFERS          10
 
+#define     M68K_OPT_FLAGS            (M68K_OPT_BASIC | M68K_OPT_VERB)
+
 #define     M68K_OPT_BASIC            (1 << 0)
 #define     M68K_OPT_VERB             (1 << 1)
 #define     M68K_OPT_DEVICE           (1 << 2)
-
-#define     M68K_OPT_FLAGS            (M68K_OPT_BASIC | M68K_OPT_VERB)
 
 #define     M68K_MAX_ADDR_START             0xFFFFFFF0
 #define     M68K_MAX_ADDR_END               0xFFFFFFFF
@@ -73,7 +73,7 @@ typedef struct
 
 static M68K_MEM_BUFFER MEM_BUFFERS[M68K_MAX_BUFFERS];
 static unsigned MEM_NUM_BUFFERS = 0;
-static bool TRACE_ENABLED;
+static bool TRACE_ENABLED = true;
 static uint8_t ENABLED_FLAGS = M68K_OPT_FLAGS;
 static bool BUS_ERR = false;
 
@@ -93,18 +93,20 @@ void DISABLE_TRACE_FLAG(uint8_t FLAG)
 
 bool IS_TRACE_ENABLED(uint8_t FLAG)
 {
-    return (ENABLED_FLAGS & FLAG) != 0;
+    return (ENABLED_FLAGS & FLAG) == FLAG;
 }
 
 /////////////////////////////////////////////////////
 //              TRACE CONTROL MACROS
 /////////////////////////////////////////////////////
 
+#define CHECK_TRACE_CONDITION() (IS_TRACE_ENABLED(M68K_T0_SHIFT) || IS_TRACE_ENABLED(M68K_T1_SHIFT))
+
 #if DEFAULT_TRACE_FLAGS & M68K_OPT_BASIC
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
-                printf("[TRACE] %c ADDR:0x%08x SIZE:%d VALUE:0x%08x\n", \
+                printf("[TRACE] %c ADDR:0x%08X SIZE:%d VALUE:0x%08X\n", \
                       (char)(OP), (ADDR), (SIZE), (VAL)); \
         } while(0)
 #else
@@ -125,7 +127,7 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) \
         do { \
             printf("\n");                           \
-            printf("[JUMP TRACE] TO: 0x%08x FROM: 0x%08x\n", (ADDR), (FROM_ADDR));\
+            printf("[JUMP TRACE] TO: 0x%08X FROM: 0x%08X\n", (ADDR), (FROM_ADDR));\
         } while(0)
 #else
     #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
@@ -149,8 +151,6 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     printf("  T0 ACTIVE:  %s\n", IS_TRACE_ENABLED(M68K_T0_SHIFT) ? "YES" : "NO"); \
     printf("  T1 ACTIVE:  %s\n", IS_TRACE_ENABLED(M68K_T1_SHIFT) ? "YES" : "NO"); \
     printf("\n")
-
-#define CHECK_TRACE_CONDITION() (M68K_T0 || M68K_T1)
 
 /////////////////////////////////////////////////////
 //             MEMORY READ AND WRITE
@@ -383,9 +383,9 @@ int main(void)
     printf("HARRY CLARK - LIB68K MEMORY VALIDATOR\n");
     printf("======================================\n");
 
-    ENABLED_FLAGS = M68K_OPT_BASIC | M68K_T1_SHIFT;
+    ENABLED_FLAGS = M68K_OPT_FLAGS;
+    SET_TRACE_FLAGS(0, 1);
     SHOW_TRACE_STATUS();
-    SET_TRACE_FLAGS(1, 0);
 
     MEMORY_MAP(0x00001000, 0x1000, true);
 
