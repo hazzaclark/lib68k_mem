@@ -356,9 +356,16 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
     // DETERMINE WHICH MEMORY MAPS ARE BEING USED AT ANY GIVEN TIME
     // FOR NOW, WE ARE ONLY CONCERNED WITH THE RAM AND IO TO COMMUNICATE
     // WITH THE 68K'S BUS
+
+    memset(&BUF->USAGE, 0, sizeof(M68K_MEM_USAGE));
+    BUF->USAGE.ACCESSED = false;
+
+    #if M68K_MEM_DEBUG == M68K_OPT_OFF
     
     printf("MAPPED MEMORY: 0x%08x-0x%08X (%d BYTES)\n", 
            BASE, BASE + SIZE - 1, SIZE);
+
+    #endif
     MEM_TRACE(MEM_MAP, BASE, SIZE, 0);
 }
 
