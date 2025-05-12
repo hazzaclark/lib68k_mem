@@ -110,8 +110,10 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 /////////////////////////////////////////////////////
 
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
+#define         JUMP_HOOK                       M68K_OPT_ON
+#define         VERBOSE_TRACK_HOOK              M68K_OPT_ON
 
-#if MEM_TRACE_HOOK == M68K_OPT_ON
+#if MEM_TRACE_HOOK == M68K_OPT_OFF
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
@@ -122,20 +124,19 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
 #endif
 
-#if DEFAULT_TRACE_FLAGS & TRACE_VERBOSE
+#if VERBOSE_TRACK_HOOK == M68K_OPT_ON
     #define VERBOSE_TRACE(MSG, ...) \
         do { \
-            if (IS_TRACE_ENABLED(TRACE_VERBOSE)) \
-                printf("[VERBOSE] %s:%d " MSG "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+            if (IS_TRACE_ENABLED(M68K_OPT_VERB)) \
+                printf("[VERBOSE] " MSG "\n", ##__VA_ARGS__); \
         } while(0)
 #else
     #define VERBOSE_TRACE(MSG, ...) ((void)0)
 #endif
 
-#if M68K_JUMP_HOOK == M68K_OPT_ON
+#if JUMP_HOOK == M68K_OPT_ON
     #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) \
         do { \
-            printf("\n");                           \
             printf("[JUMP TRACE] TO: 0x%08X FROM: 0x%08X\n", (ADDR), (FROM_ADDR));\
         } while(0)
 #else
@@ -393,7 +394,7 @@ int main(void)
     printf("======================================\n");
 
     ENABLED_FLAGS = M68K_OPT_FLAGS;
-    SET_TRACE_FLAGS(1, 0);
+    SET_TRACE_FLAGS(0, 1);
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x00001000, 0x1000, true);
