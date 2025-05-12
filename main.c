@@ -77,6 +77,7 @@ typedef struct
     uint32_t SIZE;
     uint8_t* BUFFER;
     bool WRITE;
+    M68K_MEM_USAGE USAGE;
 
 } M68K_MEM_BUFFER;
 
@@ -230,6 +231,12 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 
     if(MEM_BASE != NULL)
     {
+        // FIRST WE READ AND DETERMINE THE READ STATISTICS OF THE CURRENT MEMORY MAP BEING ALLOCATED
+        
+        MEM_BASE->USAGE.READ_COUNT++;
+        MEM_BASE->USAGE.LAST_READ = ADDRESS;
+        MEM_BASE->USAGE.ACCESSED = true;
+
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
 
         if(OFFSET > (MEM_BASE->SIZE - (SIZE / 8)))
@@ -280,6 +287,12 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 
     if(MEM_BASE != NULL)
     {
+        // FIRST WE READ AND DETERMINE THE WRITE STATISTICS OF THE CURRENT MEMORY MAP BEING ALLOCATED
+
+        MEM_BASE->USAGE.READ_COUNT++;
+        MEM_BASE->USAGE.LAST_READ = ADDRESS;
+        MEM_BASE->USAGE.ACCESSED = false;
+
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
