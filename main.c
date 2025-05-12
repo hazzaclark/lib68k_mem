@@ -63,6 +63,16 @@ typedef enum
 
 typedef struct
 {
+    uint32_t READ_COUNT;
+    uint32_t WRITE_COUNT;
+    uint32_t LAST_READ;
+    uint32_t LAST_WRITE;
+    bool ACCESSED;
+
+} M68K_MEM_USAGE;
+
+typedef struct
+{
     uint32_t BASE;
     uint32_t SIZE;
     uint8_t* BUFFER;
@@ -329,6 +339,10 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
     BUF->WRITE = WRITABLE;
     BUF->BUFFER = malloc(SIZE);
     memset(BUF->BUFFER, 0, SIZE);
+
+    // DETERMINE WHICH MEMORY MAPS ARE BEING USED AT ANY GIVEN TIME
+    // FOR NOW, WE ARE ONLY CONCERNED WITH THE RAM AND IO TO COMMUNICATE
+    // WITH THE 68K'S BUS
     
     printf("MAPPED MEMORY: 0x%08x-0x%08X (%d BYTES)\n", 
            BASE, BASE + SIZE - 1, SIZE);
