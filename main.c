@@ -78,7 +78,6 @@ typedef enum
     MEM_REGION_IO,
     MEM_REGION_VECTORS,
     MEM_REGION_OTHER
-    
 } MEM_REGION_TYPE;
 
 typedef struct
@@ -372,7 +371,7 @@ MALFORMED:
     MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
 }
 
-static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE, MEM_REGION_TYPE TYPE) 
+static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE) 
 {
     if(MEM_NUM_BUFFERS >= M68K_MAX_BUFFERS) 
     {
@@ -385,7 +384,6 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE, MEM_REGION_T
     BUF->SIZE = SIZE;
     BUF->WRITE = WRITABLE;
     BUF->BUFFER = calloc(SIZE, 1);
-    BUF->TYPE = TYPE;
     memset(BUF->BUFFER, 0, SIZE);
 
     // DETERMINE WHICH MEMORY MAPS ARE BEING USED AT ANY GIVEN TIME
@@ -396,13 +394,11 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE, MEM_REGION_T
     BUF->USAGE.ACCESSED = false;
 
     #if M68K_MEM_DEBUG == M68K_OPT_OFF
-    printf("MAPPED %s: 0x%08X-0x%08X (%d BYTES)\n", 
-           TYPE == MEM_REGION_RAM ? "RAM" : 
-           TYPE == MEM_REGION_IO ? "IO" : 
-           TYPE == MEM_REGION_ROM ? "ROM" : "MEMORY",
+    
+    printf("MAPPED MEMORY: 0x%08x-0x%08X (%d BYTES)\n", 
            BASE, BASE + SIZE - 1, SIZE);
-    #endif
 
+    #endif
     MEM_TRACE(MEM_MAP, BASE, SIZE, 0);
 }
 
@@ -475,7 +471,7 @@ int main(void)
     SET_TRACE_FLAGS(0, 1);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x00001000, 0x1000, true, MEM_REGION_RAM);
+    MEMORY_MAP(0x00001000, 0x1000, true);
     SHOW_MEMORY_MAPS();
 
     printf("TESTING BASIC READ AND WRITES\n");
