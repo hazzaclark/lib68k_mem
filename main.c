@@ -71,15 +71,6 @@ typedef struct
 
 } M68K_MEM_USAGE;
 
-typedef enum 
-{
-    MEM_REGION_RAM,
-    MEM_REGION_ROM,
-    MEM_REGION_IO,
-    MEM_REGION_VECTORS,
-    MEM_REGION_OTHER
-} MEM_REGION_TYPE;
-
 typedef struct
 {
     uint32_t BASE;
@@ -87,7 +78,6 @@ typedef struct
     uint8_t* BUFFER;
     bool WRITE;
     M68K_MEM_USAGE USAGE;
-    MEM_REGION_TYPE TYPE;
 
 } M68K_MEM_BUFFER;
 
@@ -322,8 +312,8 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
     {
         // FIRST WE READ AND DETERMINE THE WRITE STATISTICS OF THE CURRENT MEMORY MAP BEING ALLOCATED
 
-        MEM_BASE->USAGE.READ_COUNT++;
-        MEM_BASE->USAGE.LAST_READ = ADDRESS;
+        MEM_BASE->USAGE.WRITE_COUNT++;
+        MEM_BASE->USAGE.LAST_WRITE = ADDRESS;
         MEM_BASE->USAGE.ACCESSED = false;
 
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
@@ -495,6 +485,9 @@ int main(void)
     M68K_WRITE_MEMORY_16(0x1000, IMM_16);
     uint16_t IMM_READ_16 = M68K_READ_IMM_16(0x1000);
     printf("16-BIT IMM: WROTE: 0x%04X, READ: 0x%04X\n", IMM_16, IMM_READ_16);
+
+    
+    SHOW_MEMORY_MAPS();
 
     return 0;
 }
