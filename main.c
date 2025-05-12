@@ -110,6 +110,29 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
     return (ENABLED_FLAGS & FLAG) == FLAG;
 }
 
+void SHOW_MEMORY_MAPS(void)
+{
+    printf("\nACTIVE MEMORY MAPS:\n");
+    printf("------------------------------------------------------------\n");
+    printf(" START        END         SIZE    STATE  READS   WRITES  ACCESS\n");
+    printf("------------------------------------------------------------\n");
+
+    for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
+    {
+        M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
+        printf(" 0x%08X 0x%08X %6dKB  %s  %6u  %6u   %s\n",
+                BUF->BASE,
+                BUF->BASE + BUF->SIZE - 1,
+                BUF->SIZE / 1024,
+                BUF->WRITE ? "RW" : "RO",
+                BUF->USAGE.READ_COUNT,
+                BUF->USAGE.WRITE_COUNT,
+                BUF->USAGE.ACCESSED ? "YES" : "NO");
+    }
+
+    printf("------------------------------------------------------------\n");
+}
+
 /////////////////////////////////////////////////////
 //              TRACE CONTROL MACROS
 /////////////////////////////////////////////////////
@@ -439,6 +462,7 @@ int main(void)
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x00001000, 0x1000, true);
+    SHOW_MEMORY_MAPS();
 
     printf("TESTING BASIC READ AND WRITES\n");
 
