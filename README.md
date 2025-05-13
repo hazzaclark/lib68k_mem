@@ -17,19 +17,6 @@ This doesn't aim to be anything special outside of serving to provide aid in sub
 If my commits on lib68k are anything to go by, I have been scratching my head and wrestling with the Memory logic for as long as I can remember.
 Therefore, this aims to put those quarms to rest
 
-# Validate Memory Map usage:
-
-The following aims to provide an example of one of the many features to be able to control the flow of memory throughout lib68k
-
-This is by defining memory regions, and the determining factors they attribute such as R/W modes, their length and size, and whether they have been accessed throughout execution
-
-Such is the case with the Bus, it is quite expandable in determining which memory locations can be used in accordance with whichever mode the CPU is running in (supervisor or user)
-
-For the sake of convienience, the emulator DOES run using supervisor mode by default so a lot of the features are readily available 
-
-![image](https://github.com/user-attachments/assets/f8013f11-28ea-49ee-881b-c56dbfb86dbb)
-
-
 
 ## Features:
 
@@ -72,3 +59,16 @@ Simply use the oscillating macros of ``M68K_OPT_ON`` or ``M68K_OPT_OFF`` should 
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
 #endif
 ```
+
+## Validate Memory Map usage:
+
+The following aims to provide an example of one of the many features to be able to control the flow of memory throughout lib68k
+
+This is by defining memory regions, and the determining factors they attribute such as R/W modes, their length and size, and whether they have been accessed throughout execution
+
+Such is the case with the Bus, it is quite expandable in determining which memory locations can be used in accordance with whichever mode the CPU is running in (supervisor or user)
+
+For the sake of convienience, the emulator DOES run using supervisor mode by default so a lot of the features are readily available 
+
+![image](https://github.com/user-attachments/assets/f8013f11-28ea-49ee-881b-c56dbfb86dbb)
+
