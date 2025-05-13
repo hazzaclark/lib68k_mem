@@ -165,7 +165,7 @@ void SHOW_MEMORY_MAPS(void)
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
 #endif
 
-#if VERBOSE_TRACK_HOOK == M68K_OPT_OFF
+#if VERBOSE_TRACK_HOOK == M68K_OPT_ON
     #define VERBOSE_TRACE(MSG, ...) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_VERB)) \
