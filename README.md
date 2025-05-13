@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/be8f0674-f36a-4ba1-8ce8-c0f3b05c305c)![image](https://github.com/user-attachments/assets/5f68c926-7edb-4fd0-8327-77c8a60d8dec)# lib68k_mem
+# lib68k_mem
 Standalone Reference for validating Memory Functionality in lib68k
 
 ![image](https://github.com/user-attachments/assets/7a7c2648-eb9d-42f1-9b81-19bbdc1233fa)
