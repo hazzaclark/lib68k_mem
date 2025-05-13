@@ -315,11 +315,20 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 
     if(MEM_BASE != NULL)
     {
+        // BEFORE ANYTHING, WE NEED TO VALIDATE IF THE MEMORY MAP
+        // IS EITHER RW OR JUST RO
+
+        if(!MEM_BASE->WRITE) 
+        {
+            VERBOSE_TRACE("WRITE ATTEMPT TO READ-ONLY MEMORY AT 0x%08x\n", ADDRESS);
+            goto MALFORMED;
+        }
+
         // FIRST WE READ AND DETERMINE THE WRITE STATISTICS OF THE CURRENT MEMORY MAP BEING ALLOCATED
 
         MEM_BASE->USAGE.WRITE_COUNT++;
         MEM_BASE->USAGE.LAST_WRITE = ADDRESS;
-        MEM_BASE->USAGE.ACCESSED = false;
+        MEM_BASE->USAGE.ACCESSED = true;
 
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
@@ -467,6 +476,8 @@ int main(void)
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x00001000, 0x1000, true);
+    MEMORY_MAP(0x400000, 0x80000, false);  
+
     SHOW_MEMORY_MAPS();
 
     printf("TESTING BASIC READ AND WRITES\n");
@@ -496,6 +507,10 @@ int main(void)
 
     printf("32-BIT IMM: WROTE: 0x%04X\n", IMM_32);
 
+    printf("WRITING TO ROM: \n");
+    M68K_WRITE_MEMORY_8(0x400000, 0x55);
+    printf("READING FROM ROM: \n");
+    M68K_READ_MEMORY_8(0x400000);
     
     SHOW_MEMORY_MAPS();
 
