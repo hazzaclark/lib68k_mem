@@ -1,4 +1,4 @@
-# lib68k_mem
+![image](https://github.com/user-attachments/assets/be8f0674-f36a-4ba1-8ce8-c0f3b05c305c)![image](https://github.com/user-attachments/assets/5f68c926-7edb-4fd0-8327-77c8a60d8dec)# lib68k_mem
 Standalone Reference for validating Memory Functionality in lib68k
 
 ![image](https://github.com/user-attachments/assets/7a7c2648-eb9d-42f1-9b81-19bbdc1233fa)
@@ -16,6 +16,19 @@ This doesn't aim to be anything special outside of serving to provide aid in sub
 
 If my commits on lib68k are anything to go by, I have been scratching my head and wrestling with the Memory logic for as long as I can remember.
 Therefore, this aims to put those quarms to rest
+
+# Validate Memory Map usage:
+
+The following aims to provide an example of one of the many features to be able to control the flow of memory throughout lib68k
+
+This is by defining memory regions, and the determining factors they attribute such as R/W modes, their length and size, and whether they have been accessed throughout execution
+
+Such is the case with the Bus, it is quite expandable in determining which memory locations can be used in accordance with whichever mode the CPU is running in (supervisor or user)
+
+For the sake of convienience, the emulator DOES run using supervisor mode by default so a lot of the features are readily available 
+
+![image](https://github.com/user-attachments/assets/f8013f11-28ea-49ee-881b-c56dbfb86dbb)
+
 
 
 ## Features:
