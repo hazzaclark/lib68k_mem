@@ -209,7 +209,7 @@ void SHOW_MEMORY_MAPS(void)
 
 static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 {
-    VERBOSE_TRACE("FINDING ADDRESS 0x%08x", ADDRESS);
+    VERBOSE_TRACE("FOUND MEMORY: 0x%04X", ADDRESS);
 
     // ITERATE THROUGH ALL REGISTERED MEMORY BUFFERS
     for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
@@ -387,7 +387,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
     BUF->BASE = BASE;
     BUF->SIZE = SIZE;
     BUF->WRITE = WRITABLE;
-    BUF->BUFFER = calloc(SIZE, 1);
+    BUF->BUFFER = malloc(SIZE);
     memset(BUF->BUFFER, 0, SIZE);
 
     // DETERMINE WHICH MEMORY MAPS ARE BEING USED AT ANY GIVEN TIME
@@ -403,7 +403,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
            BASE, BASE + SIZE - 1, SIZE);
 
     #endif
-    MEM_TRACE(MEM_MAP, BASE, SIZE, 0);
+    MEM_TRACE(MEM_MAP, BASE, SIZE, WRITABLE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -506,11 +506,6 @@ int main(void)
     M68K_WRITE_MEMORY_32(0x1030, IMM_32);
 
     printf("32-BIT IMM: WROTE: 0x%04X\n", IMM_32);
-
-    printf("WRITING TO ROM: \n");
-    M68K_WRITE_MEMORY_8(0x400000, 0x55);
-    printf("READING FROM ROM: \n");
-    M68K_READ_MEMORY_8(0x400000);
     
     SHOW_MEMORY_MAPS();
 
