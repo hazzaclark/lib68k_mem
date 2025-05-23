@@ -227,10 +227,17 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
         // 1. THE REQUESTED ADDRESS IS >= THE BUFFER'S BASE ADDRESS
         // 2. THE OFFSET FROM BASE ADDRESS IS WITHIN THE BUFFER'S SIZE
 
-        if((ADDRESS >= MEM_BASE->BASE) && ((ADDRESS - MEM_BASE->BASE) < MEM_BASE->SIZE))
+        if((MEM_BASE->BUFFER != NULL) && 
+                (ADDRESS >= MEM_BASE->BASE) && 
+                ((ADDRESS - MEM_BASE->BASE) < MEM_BASE->SIZE))
         {
-            // BUFFER FOUND - LOG DETAILS AND RETURN THE BUFFER POINTER
-            VERBOSE_TRACE("FOUND BUFFER WITH SIZE = 0x%04x\n", MEM_BASE->SIZE);
+            VERBOSE_TRACE("ACCESSED: 0x%08X [%s] IN BUFFER %u: 0x%08X - 0x%08X\n", 
+                ADDRESS, 
+                MEM_BASE->WRITE ? "RW" : "RO", 
+                INDEX, 
+                MEM_BASE->BASE, 
+                MEM_BASE->BASE + MEM_BASE->SIZE - 1);
+
             return MEM_BASE;
         }
     }
@@ -370,7 +377,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
     }
 
 MALFORMED:
-    fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%08X (SIZE: 0x%02X, VALUE: 0x%08X)\n", 
+    fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%08X (SIZE: %d, VALUE: 0x%08X)\n", 
             ADDRESS, SIZE, VALUE);
     MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
 }
