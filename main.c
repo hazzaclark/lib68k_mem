@@ -67,6 +67,7 @@ typedef struct
     uint32_t WRITE_COUNT;
     uint32_t LAST_READ;
     uint32_t LAST_WRITE;
+    uint32_t VIOLATION;
     bool ACCESSED;
 
 } M68K_MEM_USAGE;
@@ -276,7 +277,8 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 
         if(OFFSET > (MEM_BASE->SIZE - (SIZE / 8)))
         {
-            VERBOSE_TRACE("READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d\n", OFFSET, SIZE);
+            MEM_BASE->USAGE.VIOLATION++;
+            VERBOSE_TRACE("READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u\n", OFFSET, SIZE, MEM_BASE->USAGE.VIOLATION);
             goto MALFORMED_READ;
         }
         
@@ -327,7 +329,8 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 
         if(!MEM_BASE->WRITE) 
         {
-            VERBOSE_TRACE("WRITE ATTEMPT TO READ-ONLY MEMORY AT 0x%08x\n", ADDRESS);
+            MEM_BASE->USAGE.VIOLATION++;
+            VERBOSE_TRACE("WRITE ATTEMPT TO READ-ONLY MEMORY AT 0x%08x, VIOLATION #%u\n", ADDRESS, MEM_BASE->USAGE.VIOLATION);
             goto MALFORMED;
         }
 
@@ -339,12 +342,6 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
-
-        if(!MEM_BASE->WRITE) 
-        {
-            VERBOSE_TRACE("WRITE ATTEMPT TO READ-ONLY MEMORY AT 0x%08x\n", ADDRESS);
-            goto MALFORMED;
-        }
 
         if((OFFSET + BYTES) > MEM_BASE->SIZE) 
         {
@@ -479,7 +476,7 @@ int main(void)
     printf("======================================\n");
 
     ENABLED_FLAGS = M68K_OPT_FLAGS;
-    SET_TRACE_FLAGS(0, 1);
+    SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x00001000, 0x1000, true);
@@ -513,6 +510,9 @@ int main(void)
     M68K_WRITE_MEMORY_32(0x1030, IMM_32);
 
     printf("32-BIT IMM: WROTE: 0x%04X\n", IMM_32);
+
+    printf("TESTING WRITE PROTECTION\n");
+    M68K_WRITE_MEMORY_8(0x400000, 0x00);
     
     SHOW_MEMORY_MAPS();
 
