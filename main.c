@@ -23,7 +23,7 @@
 #define     M68K_OPT_VERB             (1 << 1)
 #define     M68K_OPT_DEVICE           (1 << 2)
 
-#define     M68K_MAX_ADDR_START             0xFFFFFFF0
+#define     M68K_MAX_ADDR_START             0x00000000
 #define     M68K_MAX_ADDR_END               0xFFFFFFFF
 
 #define     M68K_OPT_OFF		0
@@ -144,6 +144,7 @@ void SHOW_MEMORY_MAPS(void)
 //                 HOOK OPTIONS
 /////////////////////////////////////////////////////
 
+#define         MEM_MAP_TRACE_HOOK              M68K_OPT_ON
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 #define         JUMP_HOOK                       M68K_OPT_ON
 #define         VERBOSE_TRACK_HOOK              M68K_OPT_ON
@@ -155,7 +156,7 @@ void SHOW_MEMORY_MAPS(void)
 
 // HENCE WHY THE MEM TRACE NEEDS TO PROPERLY VALIDATE THE CONDITIONAL BEFOREHAND
 
-#if MEM_TRACE_HOOK == M68K_OPT_ON
+#if MEM_TRACE_HOOK == M68K_OPT_OFF
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
@@ -166,7 +167,18 @@ void SHOW_MEMORY_MAPS(void)
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
 #endif
 
-#if VERBOSE_TRACK_HOOK == M68K_OPT_ON
+#if MEM_MAP_TRACE_HOOK == M68K_OPT_ON
+    #define MEM_MAP_TRACE(OP, ADDR, SIZE, VAL) \
+        do { \
+            if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
+                printf("[TRACE] %c ADDR:0x%08X SIZE:%u\n", \
+                      (char)(OP), (ADDR), (SIZE)); \
+        } while(0)
+#else
+    #define MEM_MAP_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
+#endif
+
+#if VERBOSE_TRACK_HOOK == M68K_OPT_OFF
     #define VERBOSE_TRACE(MSG, ...) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_VERB)) \
@@ -268,6 +280,10 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
     if(MEM_BASE != NULL)
     {
         // FIRST WE READ AND DETERMINE THE READ STATISTICS OF THE CURRENT MEMORY MAP BEING ALLOCATED
+        
+        MEM_BASE->USAGE.READ_COUNT++;
+        MEM_BASE->USAGE.LAST_READ = ADDRESS;
+        MEM_BASE->USAGE.ACCESSED = true;
 
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
 
@@ -277,12 +293,6 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
             VERBOSE_TRACE("READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u\n", OFFSET, SIZE, MEM_BASE->USAGE.VIOLATION);
             goto MALFORMED_READ;
         }
-
-        // ONLY INCREMENT ON THE READ COUNT AFTER SUCCESSFUL DETERMINANT
-
-        MEM_BASE->USAGE.READ_COUNT++;
-        MEM_BASE->USAGE.LAST_READ = ADDRESS;
-        MEM_BASE->USAGE.ACCESSED = true;
         
         // THIS MEMORY POINTER WILL ALLOCATE ITSELF RELATIVE TO THE BUFFER
         // AS WELL AS THE BIT SHIFT OFFSET THAT IS PRESENT WITH THE RESPECTIVE BIT VALUE
@@ -336,6 +346,12 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
             goto MALFORMED;
         }
 
+        // FIRST WE READ AND DETERMINE THE WRITE STATISTICS OF THE CURRENT MEMORY MAP BEING ALLOCATED
+
+        MEM_BASE->USAGE.WRITE_COUNT++;
+        MEM_BASE->USAGE.LAST_WRITE = ADDRESS;
+        MEM_BASE->USAGE.ACCESSED = true;
+
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
@@ -344,12 +360,6 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
             VERBOSE_TRACE("WRITE OUT OF BOUNDS: OFFSET = %d, SIZE = %d\n", OFFSET, BYTES);
             goto MALFORMED;
         }
-
-        // ONLY INCREMENT ON THE WRITE COUNT AFTER SUCCESSFUL DETERMINANT
-
-        MEM_BASE->USAGE.WRITE_COUNT++;
-        MEM_BASE->USAGE.LAST_WRITE = ADDRESS;
-        MEM_BASE->USAGE.ACCESSED = true;
 
         uint8_t* MEM_PTR = MEM_BASE->BUFFER + OFFSET;
         MEM_TRACE(MEM_WRITE, ADDRESS, SIZE, VALUE);
@@ -402,14 +412,11 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE)
 
     memset(&BUF->USAGE, 0, sizeof(M68K_MEM_USAGE));
     BUF->USAGE.ACCESSED = false;
-
-    #if M68K_MEM_DEBUG == M68K_OPT_OFF
     
     printf("MAPPED MEMORY: 0x%08x-0x%08X (%d BYTES)\n", 
            BASE, BASE + SIZE - 1, SIZE);
 
-    #endif
-    MEM_TRACE(MEM_MAP, BASE, SIZE, WRITABLE);
+    MEM_MAP_TRACE(MEM_MAP, BUF->BASE, BUF->SIZE, BUF->BUFFER);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
