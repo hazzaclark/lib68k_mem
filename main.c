@@ -147,7 +147,7 @@ void SHOW_MEMORY_MAPS(void)
 #define         MEM_MAP_TRACE_HOOK              M68K_OPT_ON
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 #define         JUMP_HOOK                       M68K_OPT_ON
-#define         VERBOSE_TRACK_HOOK              M68K_OPT_ON
+#define         VERBOSE_TRACE_HOOK              M68K_OPT_OFF
 
 // TRACE VALIDATION HOOKS TO BE ABLE TO CONCLUSIVELY VALIDATE MEMORY READ AND WRITES
 // WHAT MAKES THESE TWO DIFFERENT IS THAT 
@@ -178,15 +178,11 @@ void SHOW_MEMORY_MAPS(void)
     #define MEM_MAP_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
 #endif
 
-#if VERBOSE_TRACK_HOOK == M68K_OPT_OFF
-    #define VERBOSE_TRACE(MSG, ...) \
-        do { \
-            if (IS_TRACE_ENABLED(M68K_OPT_VERB)) \
-                printf("[VERBOSE] " MSG "\n", ##__VA_ARGS__); \
-        } while(0)
-#else
-    #define VERBOSE_TRACE(MSG, ...) ((void)0)
-#endif
+#define VERBOSE_TRACE(MSG, ...) \
+    do { \
+        if (VERBOSE_TRACE_HOOK == M68K_OPT_ON && IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
+            printf("[VERBOSE] " MSG "\n", ##__VA_ARGS__); \
+    } while(0)
 
 #if JUMP_HOOK == M68K_OPT_ON
     #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) \
@@ -207,13 +203,13 @@ void SHOW_MEMORY_MAPS(void)
 
 #define SHOW_TRACE_STATUS() \
     printf("\nTRACE CONFIG:\n"); \
-    printf("  BASIC:   %s\n", IS_TRACE_ENABLED(M68K_OPT_BASIC) ? "ENABLED" : "DISABLED"); \
-    printf("  VERBOSE: %s\n", IS_TRACE_ENABLED(M68K_OPT_VERB) ? "ENABLED" : "DISABLED"); \
-    printf("  DEVICE TRACES:  %s\n", IS_TRACE_ENABLED(M68K_OPT_DEVICE) ? "ENABLED" : "DISABLED"); \
-    printf("  T0 FLAG:    %s (SHIFT: 0x%02X)\n", M68K_T0 ? "ON" : "OFF", M68K_T0_SHIFT); \
-    printf("  T1 FLAG:    %s  (SHIFT: 0x%02X)\n", M68K_T1 ? "ON" : "OFF", M68K_T1_SHIFT); \
-    printf("  T0 ACTIVE:  %s\n", IS_TRACE_ENABLED(M68K_T0_SHIFT) ? "YES" : "NO"); \
-    printf("  T1 ACTIVE:  %s\n", IS_TRACE_ENABLED(M68K_T1_SHIFT) ? "YES" : "NO"); \
+    printf("  BASIC:            %s\n", IS_TRACE_ENABLED(M68K_OPT_BASIC) ? "ENABLED" : "DISABLED"); \
+    printf("  VERBOSE:          %s\n", (VERBOSE_TRACE_HOOK == M68K_OPT_ON && IS_TRACE_ENABLED(M68K_OPT_VERB)) ? "ENABLED" : "DISABLED"); \
+    printf("  DEVICE TRACES:    %s\n", IS_TRACE_ENABLED(M68K_OPT_DEVICE) ? "ENABLED" : "DISABLED"); \
+    printf("  T0 FLAG:          %s  (SHIFT: 0x%02X)\n", M68K_T0 ? "ON" : "OFF", M68K_T0_SHIFT); \
+    printf("  T1 FLAG:          %s (SHIFT: 0x%02X)\n", M68K_T1 ? "ON" : "OFF", M68K_T1_SHIFT); \
+    printf("  T0 ACTIVE:        %s\n", IS_TRACE_ENABLED(M68K_T0_SHIFT) ? "YES" : "NO"); \
+    printf("  T1 ACTIVE:        %s\n", IS_TRACE_ENABLED(M68K_T1_SHIFT) ? "YES" : "NO"); \
     printf("\n")
 
 /////////////////////////////////////////////////////
@@ -255,7 +251,7 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
         }
     }
 
-    VERBOSE_TRACE("NO BUFFER FOUND FOR ADDRESS: 0x%08x\n", ADDRESS);
+    VERBOSE_TRACE("NO BUFFER FOUND FOR ADDRESS: 0x%08X\n", ADDRESS);
     return NULL;
 }
 
@@ -264,7 +260,7 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 
 static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 {
-    VERBOSE_TRACE("READING ADDRESS FROM 0x%08x (SIZE = %d)\n", ADDRESS, SIZE);
+    VERBOSE_TRACE("READING ADDRESS FROM 0x%08X (SIZE = %d)\n", ADDRESS, SIZE);
 
     // BOUND CHECKS FOR INVALID ADDRESSING
 
@@ -505,7 +501,7 @@ int main(void)
     uint16_t READ_16 = M68K_READ_MEMORY_16(0x1010);
     printf("16-BIT: WROTE: 0x%04X, READ: 0x%04X\n", TEST_16, READ_16);
 
-    uint32_t TEST_32 = 0x13400000;
+    uint32_t TEST_32 = 0x134CA000;
     M68K_WRITE_MEMORY_32(0x1020, TEST_32);
     uint32_t READ_32 = M68K_READ_MEMORY_32(0x1020);
     printf("32-BIT: WROTE: 0x%08X, READ: 0x%08X\n", TEST_32, READ_32);
