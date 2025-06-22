@@ -34,6 +34,7 @@
 
 static unsigned int M68K_T0 = 0;
 static unsigned int M68K_T1 = 1;
+static unsigned int M68K_STOPPED;
 
 #define         M68K_T0_SHIFT                   (1 << 3)
 #define         M68K_T1_SHIFT                   (1 << 4)
@@ -113,7 +114,7 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 
 void SHOW_MEMORY_MAPS(void)
 {
-    printf("\nACTIVE MEMORY MAPS:\n");
+    printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
     printf("------------------------------------------------------------\n");
     printf("START        END         SIZE    STATE  READS   WRITES  ACCESS\n");
     printf("------------------------------------------------------------\n");
@@ -520,6 +521,8 @@ int main(void)
 
     // THIS SHOULD FETCH THE ATTEMPT TO READ TRACE
     uint32_t RESERVED = M68K_READ_MEMORY_32(0xFFFFFFF0);
+
+    M68K_STOPPED = 1;
     
     SHOW_MEMORY_MAPS();
 
