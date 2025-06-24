@@ -68,7 +68,4 @@ This is by defining memory regions, and the determining factors they attribute s
 
 Such is the case with the Bus, it is quite expandable in determining which memory locations can be used in accordance with whichever mode the CPU is running in (supervisor or user)
 
-For the sake of convienience, the emulator DOES run using supervisor mode by default so a lot of the features are readily available 
-
-![image](https://github.com/user-attachments/assets/f8013f11-28ea-49ee-881b-c56dbfb86dbb)
 
