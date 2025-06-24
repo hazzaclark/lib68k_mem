@@ -66,6 +66,8 @@ The following aims to provide an example of one of the many features to be able 
 
 This is by defining memory regions, and the determining factors they attribute such as R/W modes, their length and size, and whether they have been accessed throughout execution
 
-Such is the case with the Bus, it is quite expandable in determining which memory locations can be used in accordance with whichever mode the CPU is running in (supervisor or user)
+Such is the case with the Bus, it is quite expandable in determining which memory locations can be used in accordance with whichever mode the CPU is running in (supervisor or user).
+
+This becomes especially apparent when being able to accommodate for systems emulation whereby you have various memory regions, each with their respective, intrinsic nature of accessing memory (such as RO - readonly, for the SEGA Mega Drive's VDP)
 
 
