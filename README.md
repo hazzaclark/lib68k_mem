@@ -70,4 +70,12 @@ Such is the case with the Bus, it is quite expandable in determining which memor
 
 This becomes especially apparent when being able to accommodate for systems emulation whereby you have various memory regions, each with their respective, intrinsic nature of accessing memory (such as RO - readonly, for the SEGA Mega Drive's VDP)
 
+## Usage:
 
+Given the versatility of the intrinsic nature of how this memory utility is setup is that, you can adjust for any use case with any sort of systems emulations (through size, means of accessing memory, banks, etc)
+
+Should you want to use this, it's a simple case of:
+
+```
+gcc main.c -o mem && ./mem
+```
