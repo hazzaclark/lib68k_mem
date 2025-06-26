@@ -76,6 +76,7 @@ typedef struct
 typedef struct
 {
     uint32_t BASE;
+    uint32_t END;
     uint32_t SIZE;
     uint8_t* BUFFER;
     bool WRITE;
@@ -169,14 +170,14 @@ void SHOW_MEMORY_MAPS(void)
 #endif
 
 #if MEM_MAP_TRACE_HOOK == M68K_OPT_ON
-    #define MEM_MAP_TRACE(OP, ADDR, SIZE, UNIT, VAL) \
+    #define MEM_MAP_TRACE(OP, BASE, END, SIZE, UNIT, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
-                printf("[TRACE] %c ADDR:0x%08X SIZE:%d%s\n", \
-                      (char)(OP), (ADDR), (SIZE), (UNIT)); \
+                printf("[TRACE] %c -> BASE:0x%08X END:0x%08X SIZE:%d%s\n", \
+                      (char)(OP), (BASE), (END), (SIZE), (UNIT)); \
         } while(0)
 #else
-    #define MEM_MAP_TRACE(OP, ADDR, SIZE, UNIT, VAL) ((void)0)
+    #define MEM_MAP_TRACE(OP, BASE, END, SIZE, UNIT, VAL) ((void)0)
 #endif
 
 #define VERBOSE_TRACE(MSG, ...) \
@@ -400,6 +401,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
 
     M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[MEM_NUM_BUFFERS++];
     BUF->BASE = BASE;
+    BUF->END = END;
     BUF->SIZE = SIZE;
     BUF->WRITE = WRITABLE;
     BUF->BUFFER = malloc(SIZE);
@@ -412,8 +414,8 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
     memset(&BUF->USAGE, 0, sizeof(M68K_MEM_USAGE));
     BUF->USAGE.ACCESSED = false;
 
-    MEM_MAP_TRACE(MEM_MAP, BUF->BASE, SIZE >= 1024 * 1024 ? SIZE/(1024 * 1024) 
-    : SIZE >= 1024 ? SIZE/ 1024 : SIZE, SIZE >= 1024 * 1024 ? "MB" 
+    MEM_MAP_TRACE(MEM_MAP, BUF->BASE, BUF->END, SIZE >= 1024*1024 ? SIZE/(1024*1024) 
+    : SIZE >= 1024 ? SIZE/1024 : SIZE, SIZE >= 1024*1024 ? "MB" 
     : SIZE >= 1024 ? "KB" : "B", BUF->BUFFER);
 }
 
