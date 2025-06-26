@@ -119,7 +119,7 @@ void SHOW_MEMORY_MAPS(void)
     printf("START        END         SIZE    STATE  READS   WRITES  ACCESS\n");
     printf("------------------------------------------------------------\n");
 
-    for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
+    for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
         M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
         printf(" 0x%08X 0x%08X %6dKB  %s  %6u  %6u      %s\n",
@@ -388,13 +388,15 @@ MALFORMED:
     MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
 }
 
-static void MEMORY_MAP(uint32_t BASE, uint32_t SIZE, bool WRITABLE) 
+static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE) 
 {
     if(MEM_NUM_BUFFERS >= M68K_MAX_BUFFERS) 
     {
         fprintf(stderr, "CANNOT MAP - TOO MANY BUFFERS\n");
         return;
     }
+
+    uint32_t SIZE = END - BASE + 1;
 
     M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[MEM_NUM_BUFFERS++];
     BUF->BASE = BASE;
@@ -485,8 +487,7 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x00001000, 0x1000, true);
-    MEMORY_MAP(0x400000, 0x80000, false);  
+    MEMORY_MAP(0x00001000, 0x00002000, true);
 
     SHOW_MEMORY_MAPS();
 
