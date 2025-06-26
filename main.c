@@ -396,7 +396,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
         return;
     }
 
-    uint32_t SIZE = END - BASE + 1;
+    uint32_t SIZE = (END - BASE) + 1;
 
     M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[MEM_NUM_BUFFERS++];
     BUF->BASE = BASE;
@@ -487,7 +487,7 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x00001000, 0x00002000, true);
+    MEMORY_MAP(0x000000, 0x80000, true);  
 
     SHOW_MEMORY_MAPS();
 
