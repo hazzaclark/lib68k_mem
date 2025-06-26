@@ -169,14 +169,14 @@ void SHOW_MEMORY_MAPS(void)
 #endif
 
 #if MEM_MAP_TRACE_HOOK == M68K_OPT_ON
-    #define MEM_MAP_TRACE(OP, ADDR, SIZE, VAL) \
+    #define MEM_MAP_TRACE(OP, ADDR, SIZE, UNIT, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
-                printf("[TRACE] %c ADDR:0x%08X SIZE:%u\n", \
-                      (char)(OP), (ADDR), (SIZE)); \
+                printf("[TRACE] %c ADDR:0x%08X SIZE:%d%s\n", \
+                      (char)(OP), (ADDR), (SIZE), (UNIT)); \
         } while(0)
 #else
-    #define MEM_MAP_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
+    #define MEM_MAP_TRACE(OP, ADDR, SIZE, UNIT, VAL) ((void)0)
 #endif
 
 #define VERBOSE_TRACE(MSG, ...) \
@@ -411,11 +411,10 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
 
     memset(&BUF->USAGE, 0, sizeof(M68K_MEM_USAGE));
     BUF->USAGE.ACCESSED = false;
-    
-    printf("MAPPED MEMORY: 0x%08x-0x%08X (%d BYTES)\n", 
-           BASE, BASE + SIZE - 1, SIZE);
 
-    MEM_MAP_TRACE(MEM_MAP, BUF->BASE, BUF->SIZE, BUF->BUFFER);
+    MEM_MAP_TRACE(MEM_MAP, BUF->BASE, SIZE >= 1024 * 1024 ? SIZE/(1024 * 1024) 
+    : SIZE >= 1024 ? SIZE/ 1024 : SIZE, SIZE >= 1024 * 1024 ? "MB" 
+    : SIZE >= 1024 ? "KB" : "B", BUF->BUFFER);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -487,7 +486,7 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x000000, 0x80000, true);  
+    MEMORY_MAP(0x000000, 0x0FFFFF, true);
 
     SHOW_MEMORY_MAPS();
 
