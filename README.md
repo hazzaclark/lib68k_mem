@@ -1,7 +1,7 @@
 # lib68k_mem
 Standalone Reference for validating Memory Functionality in lib68k
 
-![image](https://github.com/user-attachments/assets/9a381b61-cb66-4cb9-b9af-e838b223b9c9)
+![image](https://github.com/user-attachments/assets/ef85f454-0142-4345-a377-c4d4bd2da6c0)
 
 ```c
 // MEMORY DEBUG INFORMATION WITH TRACE FLAGS: T0, T1
