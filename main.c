@@ -150,7 +150,7 @@ void SHOW_MEMORY_MAPS(void)
 #define         MEM_MAP_TRACE_HOOK              M68K_OPT_ON
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 #define         JUMP_HOOK                       M68K_OPT_ON
-#define         VERBOSE_TRACE_HOOK              M68K_OPT_ON
+#define         VERBOSE_TRACE_HOOK              M68K_OPT_OFF
 
 // TRACE VALIDATION HOOKS TO BE ABLE TO CONCLUSIVELY VALIDATE MEMORY READ AND WRITES
 // WHAT MAKES THESE TWO DIFFERENT IS THAT 
