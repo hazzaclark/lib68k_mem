@@ -47,10 +47,11 @@ typedef enum
 {
     MEM_READ = 'R',
     MEM_WRITE = 'W',
-    MEM_INVALID_READ = 'r',
-    MEM_INVALID_WRITE = 'w',
+    MEM_INVALID_READ = '!',
+    MEM_INVALID_WRITE = '?',
     MEM_MAP = 'M',
     MEM_UNMAP = 'U',
+    MEM_MOVE = 'O',
 
 } M68K_MEM_OP;
 
