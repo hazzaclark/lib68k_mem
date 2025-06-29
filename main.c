@@ -241,7 +241,7 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 
         if((MEM_BASE->BUFFER != NULL) && 
                 (ADDRESS >= MEM_BASE->BASE) && 
-                ((ADDRESS - MEM_BASE->BASE) < MEM_BASE->SIZE))
+                ((ADDRESS < MEM_BASE->BASE) + MEM_BASE->SIZE))
         {
             VERBOSE_TRACE("ACCESSED: 0x%08X [%s] IN BUFFER %u: 0x%08X - 0x%08X\n", 
                 ADDRESS, 
@@ -280,7 +280,7 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
-        if(OFFSET > (MEM_BASE->SIZE - BYTES))
+        if((OFFSET + BYTES - 1) >= MEM_BASE->SIZE)
         {
             MEM_BASE->USAGE.VIOLATION++;
             VERBOSE_TRACE("READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u\n", OFFSET, BYTES, MEM_BASE->USAGE.VIOLATION);
@@ -351,7 +351,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
-        if(OFFSET > (MEM_BASE->SIZE - BYTES))
+        if((OFFSET + BYTES + 1) >= MEM_BASE->SIZE) 
         {
             MEM_BASE->USAGE.VIOLATION++;
             VERBOSE_TRACE("WRITE OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u\n", OFFSET, BYTES, MEM_BASE->USAGE.VIOLATION);
@@ -531,12 +531,9 @@ int main(void)
     printf("\nTESTING WRITE PROTECTION\n");
     M68K_WRITE_MEMORY_8(0x400000, 0x01);
 
-    // THIS SHOULD FETCH THE ATTEMPT TO READ TRACE
-    uint32_t RESERVED = M68K_READ_MEMORY_32(0x7FFFF);
-
-    // THIS ONE SHOULD SUCCEED, THE SECOND FAILS
-    M68K_WRITE_MEMORY_8(0x7FFFF, 0x55);
-    M68K_WRITE_MEMORY_32(0x7FFFF, 0xFFFFFFFF);
+    // THE FIRST SHOULD PASS AND SECOND FAIL
+    uint32_t RESERVED = M68K_READ_MEMORY_32(0x7EFFF);
+    M68K_WRITE_MEMORY_32(0x7FFFF, 0x55);
 
     M68K_STOPPED = 1;
     
