@@ -1,13 +1,6 @@
 # lib68k_mem
 Standalone Reference for validating Memory Functionality in lib68k
 
-![image](https://github.com/user-attachments/assets/aa269801-7986-40ec-a5dd-073f82391230)
-
-```c
-// MEMORY DEBUG INFORMATION WITH TRACE FLAGS: T0, T1
-SET_TRACE_FLAGS(1, 0);
-```
-
 # Motive:
 
 The following aims to act as a little, subsection of lib68k, to be able to validate and verify the efficiency and accuracy in terms of the Memory read and writes of my 68k Emulator.
@@ -17,6 +10,12 @@ This doesn't aim to be anything special outside of serving to provide aid in sub
 If my commits on lib68k are anything to go by, I have been scratching my head and wrestling with the Memory logic for as long as I can remember.
 Therefore, this aims to put those quarms to rest
 
+![image](https://github.com/user-attachments/assets/aa269801-7986-40ec-a5dd-073f82391230)
+
+```c
+// MEMORY DEBUG INFORMATION WITH TRACE FLAGS: T0, T1
+SET_TRACE_FLAGS(1, 0);
+```
 
 ## Features:
 
