@@ -69,6 +69,12 @@ Such is the case with the Bus, it is quite expandable in determining which memor
 
 This becomes especially apparent when being able to accommodate for systems emulation whereby you have various memory regions, each with their respective, intrinsic nature of accessing memory (such as RO - readonly, for the SEGA Mega Drive's VDP)
 
+In addition to this, one of the many intrinsic features encompassing this Memory Utility is that there is a sophisticated means of preventing memory overflows.
+
+The 68000, for all intents and purposes as a standalone unit, has 16MB of Addressable Space on the Bus - so ensuring that none of the memmory maps exceeds that was paramount in preventing spill-overs into other memory maps and or causing a potential overflow.
+
+![image](https://github.com/user-attachments/assets/2e57e7aa-8866-4794-98f1-9c7a4435a061)
+
 ## Usage:
 
 Given the versatility of the intrinsic nature of how this memory utility is setup is that, you can adjust for any use case with any sort of systems emulations (through size, means of accessing memory, banks, etc)
