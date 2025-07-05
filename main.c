@@ -24,7 +24,8 @@
 #define     M68K_OPT_DEVICE           (1 << 2)
 
 #define     M68K_MAX_ADDR_START             0x00000000
-#define     M68K_MAX_ADDR_END               0xFFFFFFFF
+#define     M68K_MAX_MEMORY_SIZE            0xFFFFFF
+#define     M68K_MAX_ADDR_END               (M68K_MAX_ADDR_START + M68K_MAX_MEMORY_SIZE)
 
 #define     M68K_OPT_OFF		0
 #define     M68K_OPT_ON			1
@@ -41,17 +42,14 @@ static unsigned int M68K_STOPPED;
 
 #define KB_TO_BYTES      1024
 #define MB_TO_BYTES      (1024 * 1024)
-#define GB_TO_BYTES      (1024 * 1024 * 1024)
 
 #define FORMAT_SIZE(SIZE) \
-    ((SIZE) >= GB_TO_BYTES ? (SIZE)/GB_TO_BYTES : \
      (SIZE) >= MB_TO_BYTES ? (SIZE)/MB_TO_BYTES : \
-     (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE))
+     (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE)
 
 #define FORMAT_UNIT(SIZE) \
-    ((SIZE) >= GB_TO_BYTES ? "GB" : \
      (SIZE) >= MB_TO_BYTES ? "MB" : \
-     (SIZE) >= KB_TO_BYTES ? "KB" : "B")
+     (SIZE) >= KB_TO_BYTES ? "KB" : "B"
 
 /////////////////////////////////////////////////////
 //        BASE MEMORY VALIDATOR STRUCTURES
