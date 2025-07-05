@@ -241,7 +241,7 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 
         if((MEM_BASE->BUFFER != NULL) && 
                 (ADDRESS >= MEM_BASE->BASE) && 
-                ((ADDRESS < MEM_BASE->BASE) + MEM_BASE->SIZE))
+                (ADDRESS < (MEM_BASE->BASE + MEM_BASE->SIZE)))
         {
             VERBOSE_TRACE("ACCESSED: 0x%08X [%s] IN BUFFER %u: 0x%08X - 0x%08X\n", 
                 ADDRESS, 
