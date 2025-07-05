@@ -23,12 +23,12 @@
 #define     M68K_OPT_VERB             (1 << 1)
 #define     M68K_OPT_DEVICE           (1 << 2)
 
-#define     M68K_MAX_ADDR_START             0x00000000
+#define     M68K_MAX_ADDR_START             0x000000
 #define     M68K_MAX_MEMORY_SIZE            0xFFFFFF
 #define     M68K_MAX_ADDR_END               (M68K_MAX_ADDR_START + M68K_MAX_MEMORY_SIZE)
 
-#define     M68K_OPT_OFF		0
-#define     M68K_OPT_ON			1
+#define     M68K_OPT_OFF        0
+#define     M68K_OPT_ON         1
 
 // THESE WILL OF COURSE BE SUBSTITUTED FOR THEIR RESPECTIVE METHOD OF
 // ACCESS WITHIN THE EMULATOR ITSELF
@@ -163,7 +163,7 @@ void SHOW_MEMORY_MAPS(void)
 #define         MEM_MAP_TRACE_HOOK              M68K_OPT_ON
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 #define         JUMP_HOOK                       M68K_OPT_ON
-#define         VERBOSE_TRACE_HOOK              M68K_OPT_OFF
+#define         VERBOSE_TRACE_HOOK              M68K_OPT_ON
 
 // TRACE VALIDATION HOOKS TO BE ABLE TO CONCLUSIVELY VALIDATE MEMORY READ AND WRITES
 // WHAT MAKES THESE TWO DIFFERENT IS THAT 
@@ -285,6 +285,12 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
         goto MALFORMED_READ;
     }
 
+    if(ADDRESS > M68K_MAX_MEMORY_SIZE)
+    {
+        VERBOSE_TRACE("ATTEMPT TO READ FROM AN ADDRESS RANGE BEYOND THE ADDRESSABLE SPACE: 0x%08X\n", ADDRESS);
+        goto MALFORMED_READ;
+    }
+
     // FIND THE ADDRESS AND IT'S RELEVANT SIZE IN ACCORDANCE WITH WHICH VALUE IS BEING PROC.
     M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
 
@@ -357,18 +363,24 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         {
             MEM_BASE->USAGE.VIOLATION++;
             VERBOSE_TRACE("WRITE ATTEMPT TO READ-ONLY MEMORY AT 0x%08x, VIOLATION #%u\n", ADDRESS, MEM_BASE->USAGE.VIOLATION);
-            goto MALFORMED;
+            goto MALFORMED_WRITE;
+        }
+
+        if(ADDRESS > M68K_MAX_MEMORY_SIZE)
+        {
+            VERBOSE_TRACE("ATTEMPT TO WRITE TO AN ADDRESS RANGE BEYOND THE ADDRESSABLE SPACE: 0x%08X\n", ADDRESS);
+            goto MALFORMED_WRITE;
         }
 
 
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
-        if((OFFSET + BYTES + 1) >= MEM_BASE->SIZE) 
+        if((OFFSET + BYTES) > MEM_BASE->SIZE) 
         {
             MEM_BASE->USAGE.VIOLATION++;
             VERBOSE_TRACE("WRITE OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u\n", OFFSET, BYTES, MEM_BASE->USAGE.VIOLATION);
-            goto MALFORMED;
+            goto MALFORMED_WRITE;
         }
 
         // FIRST WE READ AND DETERMINE THE WRITE STATISTICS OF THE CURRENT MEMORY MAP BEING ALLOCATED
@@ -403,7 +415,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         return;
     }
 
-MALFORMED:
+MALFORMED_WRITE:
     fprintf(stderr, "BAD WRITE AT ADDRESS: 0x%08X (SIZE: %d, VALUE: 0x%08X)\n", 
             ADDRESS, SIZE, VALUE);
     MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
@@ -414,6 +426,12 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
     if(MEM_NUM_BUFFERS >= M68K_MAX_BUFFERS) 
     {
         fprintf(stderr, "CANNOT MAP - TOO MANY BUFFERS\n");
+        return;
+    }
+
+    if(END > M68K_MAX_MEMORY_SIZE)
+    {
+        VERBOSE_TRACE("WARNING -> END ADDRESS 0x%08X EXCEEDS THE BUS LIMIT", END);
         return;
     }
 
@@ -509,7 +527,11 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x000000, 0xFFFFF, true);
+    MEMORY_MAP(0x000000, 0xFFFFFF, true);
+
+    // THESE TWO EXCEED THE LIMIT - SHOULD FAIL
+    MEMORY_MAP(0x000000, 0x1000000, true); 
+    MEMORY_MAP(0xF00000, 0x1000000, true); 
 
     SHOW_MEMORY_MAPS();
 
