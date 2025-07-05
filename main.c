@@ -39,6 +39,20 @@ static unsigned int M68K_STOPPED;
 #define         M68K_T0_SHIFT                   (1 << 3)
 #define         M68K_T1_SHIFT                   (1 << 4)
 
+#define KB_TO_BYTES      1024
+#define MB_TO_BYTES      (1024 * 1024)
+#define GB_TO_BYTES      (1024 * 1024 * 1024)
+
+#define FORMAT_SIZE(SIZE) \
+    ((SIZE) >= GB_TO_BYTES ? (SIZE)/GB_TO_BYTES : \
+     (SIZE) >= MB_TO_BYTES ? (SIZE)/MB_TO_BYTES : \
+     (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE))
+
+#define FORMAT_UNIT(SIZE) \
+    ((SIZE) >= GB_TO_BYTES ? "GB" : \
+     (SIZE) >= MB_TO_BYTES ? "MB" : \
+     (SIZE) >= KB_TO_BYTES ? "KB" : "B")
+
 /////////////////////////////////////////////////////
 //        BASE MEMORY VALIDATOR STRUCTURES
 /////////////////////////////////////////////////////
@@ -117,24 +131,25 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 void SHOW_MEMORY_MAPS(void)
 {
     printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
-    printf("------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------\n");
     printf("START        END         SIZE    STATE  READS   WRITES  ACCESS\n");
-    printf("------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------\n");
 
     for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
         M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
-        printf(" 0x%08X 0x%08X %6dKB  %s  %6u  %6u      %s\n",
+        printf("0x%08X 0x%08X  %3d%s     %2s  %6u  %6u      %s\n",
                 BUF->BASE,
                 BUF->BASE + BUF->SIZE - 1,
-                BUF->SIZE / 1024,
+                FORMAT_SIZE(BUF->SIZE), 
+                FORMAT_UNIT(BUF->SIZE),
                 BUF->WRITE ? "RW" : "RO",
                 BUF->USAGE.READ_COUNT,
                 BUF->USAGE.WRITE_COUNT,
                 BUF->USAGE.ACCESSED ? "YES" : "NO");
     }
 
-    printf("------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------\n");
 }
 
 /////////////////////////////////////////////////////
@@ -171,12 +186,12 @@ void SHOW_MEMORY_MAPS(void)
 #endif
 
 #if MEM_MAP_TRACE_HOOK == M68K_OPT_ON
-    #define MEM_MAP_TRACE(OP, BASE, END, SIZE, UNIT, VAL) \
-        do { \
-            if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
-                printf("[TRACE] %c -> START:0x%08X END:0x%08X SIZE:%d%s\n", \
-                      (char)(OP), (BASE), (END), (SIZE), (UNIT)); \
-        } while(0)
+    #define MEM_MAP_TRACE(OP, BASE, END, SIZE, VAL) \
+    do { \
+        if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
+            printf("[TRACE] %c -> START:0x%08X END:0x%08X SIZE:%d%s\n", \
+                  (char)(OP), (BASE), (END), FORMAT_SIZE(SIZE), FORMAT_UNIT(SIZE)); \
+    } while(0)
 #else
     #define MEM_MAP_TRACE(OP, BASE, END, SIZE, UNIT, VAL) ((void)0)
 #endif
@@ -421,9 +436,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
     memset(&BUF->USAGE, 0, sizeof(M68K_MEM_USAGE));
     BUF->USAGE.ACCESSED = false;
 
-    MEM_MAP_TRACE(MEM_MAP, BUF->BASE, BUF->END, SIZE >= 1024*1024 ? SIZE/(1024*1024) 
-    : SIZE >= 1024 ? SIZE/1024 : SIZE, SIZE >= 1024*1024 ? "MB" 
-    : SIZE >= 1024 ? "KB" : "B", BUF->BUFFER);
+    MEM_MAP_TRACE(MEM_MAP, BUF->BASE, BUF->END, BUF->SIZE, BUF->BUFFER);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -498,7 +511,7 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x000000, 0x7FFFF, true);
+    MEMORY_MAP(0x000000, 0xFFFFF, true);
 
     SHOW_MEMORY_MAPS();
 
@@ -533,7 +546,7 @@ int main(void)
 
     // THE FIRST SHOULD PASS AND SECOND FAIL
     uint32_t RESERVED = M68K_READ_MEMORY_32(0x7EFFF);
-    M68K_WRITE_MEMORY_32(0x7FFFF, 0x55);
+    M68K_WRITE_MEMORY_32(0xFFFFF, 0x55);
 
     M68K_STOPPED = 1;
     
