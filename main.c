@@ -40,16 +40,16 @@ static unsigned int M68K_STOPPED;
 #define         M68K_T0_SHIFT                   (1 << 3)
 #define         M68K_T1_SHIFT                   (1 << 4)
 
-#define KB_TO_BYTES      1024
-#define MB_TO_BYTES      (1024 * 1024)
+#define         KB_TO_BYTES                     1024
+#define         MB_TO_BYTES                     (1024 * 1024)
 
-#define FORMAT_SIZE(SIZE) \
-     (SIZE) >= MB_TO_BYTES ? (SIZE)/MB_TO_BYTES : \
-     (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE)
+#define         FORMAT_SIZE(SIZE) \
+                (SIZE) >= MB_TO_BYTES ? (SIZE)/MB_TO_BYTES : \
+                (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE)
 
-#define FORMAT_UNIT(SIZE) \
-     (SIZE) >= MB_TO_BYTES ? "MB" : \
-     (SIZE) >= KB_TO_BYTES ? "KB" : "B"
+#define         FORMAT_UNIT(SIZE) \
+                (SIZE) >= MB_TO_BYTES ? "MB" : \
+                (SIZE) >= KB_TO_BYTES ? "KB" : "B"
 
 /////////////////////////////////////////////////////
 //        BASE MEMORY VALIDATOR STRUCTURES
@@ -299,7 +299,7 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
-        if((OFFSET + BYTES - 1) >= MEM_BASE->SIZE)
+        if((OFFSET + BYTES) > MEM_BASE->SIZE)
         {
             MEM_BASE->USAGE.VIOLATION++;
             VERBOSE_TRACE("READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u\n", OFFSET, BYTES, MEM_BASE->USAGE.VIOLATION);
@@ -431,7 +431,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
 
     if(END > M68K_MAX_MEMORY_SIZE)
     {
-        VERBOSE_TRACE("WARNING -> END ADDRESS 0x%08X EXCEEDS THE BUS LIMIT", END);
+        VERBOSE_TRACE("WARNING -> END ADDRESS 0x%08X EXCEEDS THE BUS LIMIT: (%d%s)", END, FORMAT_SIZE(END), FORMAT_UNIT(END));
         return;
     }
 
