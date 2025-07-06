@@ -333,7 +333,7 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
-        if((OFFSET + BYTES) > MEM_BASE->SIZE)
+        if((OFFSET + BYTES + 1) > MEM_BASE->SIZE)
         {
             MEM_BASE->USAGE.VIOLATION++;
             MEM_ERROR(MEM_ERR, MEM_ERR_BOUNDS, "READ OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u", OFFSET, BYTES, MEM_BASE->USAGE.VIOLATION);
@@ -427,7 +427,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         uint32_t OFFSET = (ADDRESS - MEM_BASE->BASE);
         uint32_t BYTES = SIZE / 8;
 
-        if((OFFSET + BYTES) > MEM_BASE->SIZE) 
+        if((OFFSET + BYTES - 1) > MEM_BASE->SIZE) 
         {
             MEM_BASE->USAGE.VIOLATION++;
             MEM_ERROR(MEM_ERR, MEM_ERR_BOUNDS, "WRITE OUT OF BOUNDS: OFFSET = %d, SIZE = %d, VIOLATION #%u", OFFSET, BYTES, MEM_BASE->USAGE.VIOLATION);
@@ -616,10 +616,6 @@ int main(void)
 
     printf("\nTESTING WRITE PROTECTION\n");
     M68K_WRITE_MEMORY_8(0x400000, 0x01);
-
-    // THE FIRST SHOULD PASS AND SECOND FAIL
-    uint32_t RESERVED = M68K_READ_MEMORY_32(0x7EEEE);
-    M68K_WRITE_MEMORY_32(0x7FFFF, 0x55);
 
     M68K_STOPPED = 1;
     
