@@ -221,6 +221,12 @@ void SHOW_MEMORY_MAPS(void)
     #define MEM_MAP_TRACE(OP, BASE, END, SIZE, UNIT, VAL) ((void)0)
 #endif
 
+#define MEM_ERROR(ERROR_CODE, MSG, ...) \
+    do { \
+        if (VERBOSE_TRACE_HOOK == M68K_OPT_ON && IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
+            printf("[ERROR:%s] " MSG "\n", M68K_MEM_ERR[ERROR_CODE], ##__VA_ARGS__); \
+    } while(0)
+
 #define VERBOSE_TRACE(MSG, ...) \
     do { \
         if (VERBOSE_TRACE_HOOK == M68K_OPT_ON && IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
