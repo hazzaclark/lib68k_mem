@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define     M68K_MAX_BUFFERS          10
+#define     M68K_MAX_BUFFERS          5
 
 #define     M68K_OPT_FLAGS            (M68K_OPT_BASIC | M68K_OPT_VERB)
 
@@ -580,16 +580,6 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
     MEMORY_MAP(0x00000, 0x7FFFF, true);
 
     SHOW_MEMORY_MAPS();
