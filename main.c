@@ -225,7 +225,7 @@ void SHOW_MEMORY_MAPS(void)
 #define MEM_ERROR(OP, ERROR_CODE, MSG, ...) \
     do { \
         if (IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
-            printf("[ERROR] %c -> %2s " MSG "\n", (char)(OP), M68K_MEM_ERR[ERROR_CODE], ##__VA_ARGS__); \
+            printf("[ERROR] %c -> %2s: " MSG "\n", (char)(OP), M68K_MEM_ERR[ERROR_CODE], ##__VA_ARGS__); \
     } while(0)
 
 #define VERBOSE_TRACE(MSG, ...) \
@@ -581,6 +581,7 @@ int main(void)
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x00000, 0x7FFFF, true);
+    MEMORY_MAP(0x400000, 0x4FFFFF, false);
 
     SHOW_MEMORY_MAPS();
 
