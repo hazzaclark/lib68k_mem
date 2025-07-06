@@ -75,6 +75,20 @@ typedef enum
 
 } M68K_MEM_SIZE;
 
+typedef enum
+{   
+    MEM_OK,
+    MEM_ERR_BOUNDS,
+    MEM_ERR_READONLY,
+    MEM_ERR_UNMAPPED,
+    MEM_ERR_BUS,
+    MEM_ERR_BUFER,
+    MEM_ERR_SIZE,
+    MEM_ERR_RESERVED,
+    MEM_ERR_OVERFLOW
+
+} M68K_MEM_ERROR;
+
 typedef struct
 {
     uint32_t READ_COUNT;
@@ -106,6 +120,19 @@ static unsigned MEM_NUM_BUFFERS = 0;
 static bool TRACE_ENABLED = true;
 static uint8_t ENABLED_FLAGS = M68K_OPT_FLAGS;
 static bool BUS_ERR = false;
+
+static const char* M68K_MEM_ERR[] = 
+{
+    "OK",
+    "MEMORY OUT OF BOUNDS",
+    "MEMORY IS READ ONLY",
+    "MEMORY REGION IS UNMAPPED",
+    "MEMORY HAS EXCEEDED BUS LIMIT",
+    "MEMORY HAS TOO MANY BUFFERS",
+    "MEMORY HAS AN INVALID SIZE FOR REGION",
+    "MEMORY VIOLATES A RESERVED RANGE",
+    "MEMORY OVERFLOW"
+};
 
 /////////////////////////////////////////////////////
 //            TRACE CONTROL FUNCTIONS
