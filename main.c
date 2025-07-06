@@ -191,7 +191,7 @@ void SHOW_MEMORY_MAPS(void)
 #define         MEM_MAP_TRACE_HOOK              M68K_OPT_ON
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 #define         JUMP_HOOK                       M68K_OPT_ON
-#define         VERBOSE_TRACE_HOOK              M68K_OPT_ON
+#define         VERBOSE_TRACE_HOOK              M68K_OPT_OFF
 
 // TRACE VALIDATION HOOKS TO BE ABLE TO CONCLUSIVELY VALIDATE MEMORY READ AND WRITES
 // WHAT MAKES THESE TWO DIFFERENT IS THAT 
@@ -224,7 +224,7 @@ void SHOW_MEMORY_MAPS(void)
 
 #define MEM_ERROR(OP, ERROR_CODE, MSG, ...) \
     do { \
-        if (VERBOSE_TRACE_HOOK == M68K_OPT_ON && IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
+        if (IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
             printf("[ERROR] %c -> %2s] " MSG "\n", (char)(OP), M68K_MEM_ERR[ERROR_CODE], ##__VA_ARGS__); \
     } while(0)
 
