@@ -84,3 +84,11 @@ Should you want to use this, it's a simple case of:
 ```
 gcc main.c -o mem && ./mem
 ```
+
+# Sources:
+
+[68K PROGRAMMER MANUAL](https://www.nxp.com/docs/en/reference-manual/M68000PRM.pdf#page=43)
+
+[SEGA MEGA DRIVE MEMORY MAP](https://segaretro.org/Sega_Mega_Drive/Memory_map)
+
+[COND. MD MEMORY MAP](https://wiki.megadrive.org/index.php?title=Main_68k_memory_map)
