@@ -128,7 +128,7 @@ The 68000, for all intents and purposes as a standalone unit, has 16MB of Addres
 
 ## Usage:
 
-Given the versatility of the intrinsic nature of how this memory utility is setup is that, you can adjust for any use case with any sort of systems emulations (through size, means of accessing memory, banks, etc)
+Given the versatility of this memory utility, you can adjust for any use case with any sort of systems emulations (through size, means of accessing memory, banks, etc)
 
 Should you want to use this, it's a simple case of:
 
