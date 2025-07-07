@@ -78,6 +78,8 @@ The Error Handlers also come with a unique flag identifier that allows them to s
     } while(0)
 ```
 
+![image](https://github.com/user-attachments/assets/07b26181-8bec-4589-945c-fac71245efe6)
+
 ## Known Bugs:
 
 As of right now, one of the known bugs is that when you are working with said ``MEM_ERROR`` macro, due to working with C99 standard, there is an inadvertant change that results in the varidatic args being a bit more strict and nuanced with it's declaration. Therefore, should debug statements ever need to be quite verbose, and in order to fill out the requirements of the macro, provide a dummy char literal that meets this requirement.
