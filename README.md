@@ -136,6 +136,12 @@ Should you want to use this, it's a simple case of:
 gcc main.c -o mem && ./mem
 ```
 
+Alternatively, supposedly you want to mitigate the bugs outlined, you could compile using the pedantic and -Werror flags (which presupposes that any inconsistency will be outlined as well as any warnings turns into an error)
+
+```
+gcc --std=c99 -Wall -pedantic main.c -o mem && ./mem
+```
+
 # Sources:
 
 [68K PROGRAMMER MANUAL](https://www.nxp.com/docs/en/reference-manual/M68000PRM.pdf#page=43)
