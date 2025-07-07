@@ -59,6 +59,55 @@ Simply use the oscillating macros of ``M68K_OPT_ON`` or ``M68K_OPT_OFF`` should 
 #endif
 ```
 
+## Sophisticated Error Handlers:
+
+One of the most intrinsic features that this memory utility offers is that, as a conjunctive effort with the variables defined as per the use-case of emulating a systems memory, it is able to dynamically alter to throw whichever error necessary. Errors that are handled and thrown are: Out of Bounds; Reserved Memory Range; Buffer Overflow, etc
+
+Each of these come with their unique string literals to define the intrinsic circumstance per error message, opting for an O(1) solution to map and print each unqiue property.
+
+The Error Handlers also come with a unique flag identifier that allows them to stand out more conducively in the TRACE output, providing further nuance and clarity for ease of use debugging
+
+```c
+// DEFINE AN ERROR HANDLER THROUGH OP, TYPE, SIZE AND DEBUG
+#define MEM_ERROR(OP, ERROR_CODE, SIZE, MSG, ...) \
+    do { \
+        if (IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
+            printf("[ERROR] %c -> %-18s [SIZE: %d]: " MSG "\n", \
+                (char)(OP), M68K_MEM_ERR[ERROR_CODE], \
+                (int)(SIZE), ##__VA_ARGS__); \
+    } while(0)
+```
+
+## Known Bugs:
+
+As of right now, one of the known bugs is that when you are working with said ``MEM_ERROR`` macro, due to working with C99 standard, there is an inadvertant change that results in the varidatic args being a bit more strict and nuanced with it's declaration. Therefore, should debug statements ever need to be quite verbose, and in order to fill out the requirements of the macro, provide a dummy char literal that meets this requirement.
+
+```c
+- lib68k_mem
+
+if(MEM_NUM_BUFFERS >= M68K_MAX_BUFFERS) 
+{
+   // WORKS FINE WITH BASE GCC, DUE TO POSIX COMPLIANCE, IT MOULDS TO WHICHEVER STANDARD
+   MEM_ERROR(MEM_ERR, MEM_ERR_BUFER, SIZE, "CANNOT MAP - TOO MANY BUFFERS");
+   return;
+}
+```
+
+```c
+- lib68k
+
+if(MEM_NUM_BUFFERS >= M68K_MAX_BUFFERS) 
+{
+   // MORE INDICATIVE OF THE STANDARD
+   MEM_ERROR(MEM_ERR, MEM_ERR_BUFER, SIZE, "CANNOT MAP - TOO MANY BUFFERS %s", " ");
+   return;
+}
+```
+
+With this being said, why would you need to change the standard between projects? This comes down to the nuance surrounding the portability sake of the C99 standard. Without giving much of a History lesson within a README, the C99 standard introduced a lot of defacto standard technicalities and features that were vacant in other C standards - it's the most commercial standard of C for a reason.
+
+As such, even for a small utility like that, for withstanding a few adjustments to meet the standard of lib68k, opting for the C99 standard promotes scalibility and portable while promoting safety. 
+
 ## Validate Memory Map usage:
 
 The following aims to provide an example of one of the many features to be able to control the flow of memory throughout lib68k
