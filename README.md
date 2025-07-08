@@ -124,7 +124,7 @@ In addition to this, one of the many intrinsic features encompassing this Memory
 
 The 68000, for all intents and purposes as a standalone unit, has 16MB of Addressable Space on the Bus - so ensuring that none of the memory maps exceeds that was paramount in preventing spill-overs into other memory maps and or causing a potential overflow.
 
-![image](https://github.com/user-attachments/assets/2e57e7aa-8866-4794-98f1-9c7a4435a061)
+![image](https://github.com/user-attachments/assets/4a650d87-700b-4316-aa6e-92c4346eaf92)
 
 ## Usage:
 
