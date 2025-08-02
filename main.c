@@ -43,6 +43,8 @@ static unsigned int M68K_STOPPED;
 #define         KB_TO_BYTES                     1024
 #define         MB_TO_BYTES                     (1024 * 1024)
 
+#define         M68K_LSB_MASK                   0xFF
+
 #define         FORMAT_SIZE(SIZE) \
                 (SIZE) >= MB_TO_BYTES ? (SIZE)/MB_TO_BYTES : \
                 (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE)
@@ -376,7 +378,7 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
         return MEM_RETURN;
     }
 
-    MEM_ERROR(MEM_ERR, MEM_ERR_UNMAPPED, SIZE, "NO BUFFER FOUND FOR ADqDRESS: 0x%08X", ADDRESS);
+    MEM_ERROR(MEM_ERR, MEM_ERR_UNMAPPED, SIZE, "NO BUFFER FOUND FOR ADDRESS: 0x%08X", ADDRESS);
 
 MALFORMED_READ:
     MEM_ERROR(MEM_ERR, MEM_ERR_BAD_READ, SIZE, "ADDRESS: 0x%08X", ADDRESS);
@@ -436,19 +438,19 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         switch (SIZE)
         {
             case MEM_SIZE_32:
-                *MEM_PTR++ = (VALUE >> 24) & 0xFF;
-                *MEM_PTR++ = (VALUE >> 16) & 0xFF;
-                *MEM_PTR++ = (VALUE >> 8) & 0xFF;
-                *MEM_PTR = VALUE & 0xFF;
+                *MEM_PTR++ = (VALUE >> 24) & M68K_LSB_MASK;
+                *MEM_PTR++ = (VALUE >> 16) & M68K_LSB_MASK;
+                *MEM_PTR++ = (VALUE >> 8) & M68K_LSB_MASK;
+                *MEM_PTR = VALUE & M68K_LSB_MASK;
                 break;
 
             case MEM_SIZE_16:
-                *MEM_PTR++ = (VALUE >> 8) & 0xFF;
-                *MEM_PTR = VALUE & 0xFF;
+                *MEM_PTR++ = (VALUE >> 8) & M68K_LSB_MASK;
+                *MEM_PTR = VALUE & M68K_LSB_MASK;
                 break;
             
             case MEM_SIZE_8:
-                *MEM_PTR = VALUE & 0xFF;
+                *MEM_PTR = VALUE & M68K_LSB_MASK;
                 break;
         }
         return;
