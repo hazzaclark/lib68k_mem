@@ -43,8 +43,6 @@ static unsigned int M68K_STOPPED;
 #define         KB_TO_BYTES                     1024
 #define         MB_TO_BYTES                     (1024 * 1024)
 
-#define         M68K_LSB_MASK                   0xFF
-
 #define         FORMAT_SIZE(SIZE) \
                 (SIZE) >= MB_TO_BYTES ? (SIZE)/MB_TO_BYTES : \
                 (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE)
@@ -209,7 +207,7 @@ void SHOW_MEMORY_MAPS(void)
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
-                printf("[TRACE] %c ADDR:0x%X SIZE:%d VALUE:0x%X\n", \
+                printf("[TRACE] %c ADDR:0x%08X SIZE:%d VALUE:0x%08X\n", \
                       (char)(OP), (ADDR), (SIZE), (VAL)); \
         } while(0)
 #else
@@ -244,7 +242,7 @@ void SHOW_MEMORY_MAPS(void)
 #if JUMP_HOOK == M68K_OPT_ON
     #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) \
         do { \
-            printf("[JUMP TRACE] TO: 0x%X FROM: 0x%X\n", (ADDR), (FROM_ADDR));\
+            printf("[JUMP TRACE] TO: 0x%08X FROM: 0x%08X\n", (ADDR), (FROM_ADDR));\
         } while(0)
 #else
     #define M68K_BASE_JUMP_HOOK(ADDR, FROM_ADDR) ((void)0)
@@ -320,9 +318,14 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
     VERBOSE_TRACE("READING ADDRESS FROM 0x%08X (SIZE = %d)\n", ADDRESS, SIZE);
 
     // BOUND CHECKS FOR INVALID ADDRESSING
-    if(ADDRESS > M68K_MAX_ADDR_END || ADDRESS > M68K_MAX_MEMORY_SIZE)
+    if(ADDRESS > M68K_MAX_ADDR_END)
     {
         MEM_ERROR(MEM_ERR, MEM_ERR_RESERVED, SIZE, "ATTEMPT TO READ FROM RESERVED ADDRESS RANGE: 0x%08X", ADDRESS);
+        goto MALFORMED_READ;
+    }
+
+    if(ADDRESS > M68K_MAX_MEMORY_SIZE)
+    {
         MEM_ERROR(MEM_ERR, MEM_ERR_BOUNDS, SIZE, "ATTEMPT TO READ FROM AN ADDRESS RANGE BEYOND THE ADDRESSABLE SPACE: 0x%08X", ADDRESS);
         goto MALFORMED_READ;
     }
@@ -392,13 +395,18 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 {
     M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
 
-    VERBOSE_TRACE("WRITING TO ADDRESS 0x%X (SIZE = %d, VALUE = 0x%X)\n", ADDRESS, SIZE, VALUE);
+    VERBOSE_TRACE("WRITING TO ADDRESS 0x%08X (SIZE = %d, VALUE = 0x%08X)\n", ADDRESS, SIZE, VALUE);
 
     // BOUND CHECKS FOR INVALID ADDRESSING
-    if(ADDRESS > M68K_MAX_ADDR_END || ADDRESS > M68K_MAX_MEMORY_SIZE)
+    if(ADDRESS > M68K_MAX_ADDR_END)
     {
-        MEM_ERROR(MEM_ERR, MEM_ERR_RESERVED, SIZE, "ATTEMPT TO WRITE TO RESERVED ADDRESS RANGE: 0x%X", ADDRESS);
-        MEM_ERROR(MEM_ERR, MEM_ERR_BOUNDS, SIZE, "ATTEMPT TO WRITE TO AN ADDRESS RANGE BEYOND THE ADDRESSABLE SPACE: 0x%X", ADDRESS);
+        MEM_ERROR(MEM_ERR, MEM_ERR_RESERVED, SIZE, "ATTEMPT TO WRITE TO RESERVED ADDRESS RANGE: 0x%08X", ADDRESS);
+        goto MALFORMED_WRITE;
+    }
+
+    if(ADDRESS > M68K_MAX_MEMORY_SIZE)
+    {
+        MEM_ERROR(MEM_ERR, MEM_ERR_BOUNDS, SIZE, "ATTEMPT TO WRITE TO AN ADDRESS RANGE BEYOND THE ADDRESSABLE SPACE: 0x%08X", ADDRESS);
         goto MALFORMED_WRITE;
     }
 
@@ -410,7 +418,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         if(!MEM_BASE->WRITE) 
         {
             MEM_BASE->USAGE.VIOLATION++;
-            MEM_ERROR(MEM_ERR, MEM_ERR_READONLY, SIZE, "WRITE ATTEMPT TO READ-ONLY MEMORY AT 0x%0x, VIOLATION #%u", ADDRESS, MEM_BASE->USAGE.VIOLATION);
+            MEM_ERROR(MEM_ERR, MEM_ERR_READONLY, SIZE, "WRITE ATTEMPT TO READ-ONLY MEMORY AT 0x%08x, VIOLATION #%u", ADDRESS, MEM_BASE->USAGE.VIOLATION);
             goto MALFORMED_WRITE;
         }
 
@@ -438,28 +446,28 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         switch (SIZE)
         {
             case MEM_SIZE_32:
-                *MEM_PTR++ = (VALUE >> 24) & M68K_LSB_MASK;
-                *MEM_PTR++ = (VALUE >> 16) & M68K_LSB_MASK;
-                *MEM_PTR++ = (VALUE >> 8) & M68K_LSB_MASK;
-                *MEM_PTR = VALUE & M68K_LSB_MASK;
+                *MEM_PTR++ = (VALUE >> 24) & 0xFF;
+                *MEM_PTR++ = (VALUE >> 16) & 0xFF;
+                *MEM_PTR++ = (VALUE >> 8) & 0xFF;
+                *MEM_PTR = VALUE & 0xFF;
                 break;
 
             case MEM_SIZE_16:
-                *MEM_PTR++ = (VALUE >> 8) & M68K_LSB_MASK;
-                *MEM_PTR = VALUE & M68K_LSB_MASK;
+                *MEM_PTR++ = (VALUE >> 8) & 0xFF;
+                *MEM_PTR = VALUE & 0xFF;
                 break;
             
             case MEM_SIZE_8:
-                *MEM_PTR = VALUE & M68K_LSB_MASK;
+                *MEM_PTR = VALUE & 0xFF;
                 break;
         }
         return;
     }
 
-    MEM_ERROR(MEM_ERR, MEM_ERR_UNMAPPED, SIZE, "NO BUFFER FOUND FOR ADDRESS: 0x%0X", ADDRESS);
+    MEM_ERROR(MEM_ERR, MEM_ERR_UNMAPPED, SIZE, "NO BUFFER FOUND FOR ADDRESS: 0x%08X", ADDRESS);
 
 MALFORMED_WRITE:
-    MEM_ERROR(MEM_ERR, MEM_ERR_BAD_WRITE, SIZE, "VALUE: 0x%0X, ADDRESS: 0x%0X", VALUE, ADDRESS);
+    MEM_ERROR(MEM_ERR, MEM_ERR_BAD_WRITE, SIZE, "VALUE: 0x%08X, ADDRESS: 0x%08X", VALUE, ADDRESS);
     MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
 }
 
@@ -475,7 +483,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
 
     if(END >= M68K_MAX_MEMORY_SIZE)
     {
-        MEM_ERROR(MEM_ERR, MEM_ERR_BUS, SIZE, "END ADDRESS 0x%X EXCEEDS THE BUS LIMIT: (%d%s)", M68K_MAX_ADDR_END, FORMAT_SIZE(M68K_MAX_ADDR_END), FORMAT_UNIT(M68K_MAX_ADDR_END));
+        MEM_ERROR(MEM_ERR, MEM_ERR_BUS, FORMAT_SIZE(SIZE), "END ADDRESS 0x%08X EXCEEDS THE BUS LIMIT: (%d%s)", M68K_MAX_ADDR_END, FORMAT_SIZE(M68K_MAX_ADDR_END), FORMAT_UNIT(M68K_MAX_ADDR_END));
         return;
     }
 
@@ -499,7 +507,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //                      THE MAIN MEAT AND POTATOES
-//          EACH OF THESE WILL REPRESENT AN UNSIGNE INT VALUE   
+//          EACH OF THESE WILL REPRESENT AN UNSIGNE INT VALUE
 //                  FROM THERE, BEING SIGNED A DEFINER
 //          IN ACCORDANCE WITH THE ENUM (BASED ON THEIR BIT VALUE)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -571,7 +579,7 @@ int main(void)
 
     MEMORY_MAP(0x00000, 0x7FFFF, true);
     MEMORY_MAP(0x00000, 0xFFFFFFF, true);
-    MEMORY_MAP(0x400000, 0x480000, false);
+    MEMORY_MAP(0x80000, 0xFFFFF, false);
 
     SHOW_MEMORY_MAPS();
 
@@ -602,7 +610,7 @@ int main(void)
     printf("32-BIT IMM: WROTE: 0x%04X\n", IMM_32);
 
     printf("\nTESTING WRITE PROTECTION\n");
-    M68K_WRITE_MEMORY_32(0x400000, 0x42069);
+    M68K_WRITE_MEMORY_8(0x400000, 0x01);
 
     M68K_STOPPED = 1;
     SHOW_MEMORY_MAPS();
