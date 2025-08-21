@@ -10,7 +10,7 @@ This doesn't aim to be anything special outside of serving to provide aid in sub
 If my commits on lib68k are anything to go by, I have been scratching my head and wrestling with the Memory logic for as long as I can remember.
 Therefore, this aims to put those quarms to rest
 
-![image](https://github.com/user-attachments/assets/aa269801-7986-40ec-a5dd-073f82391230)
+<img width="1493" height="1137" alt="image" src="https://github.com/user-attachments/assets/952c8153-d95c-465c-b8b9-b4d2f34f8bf7" />
 
 ```c
 // MEMORY DEBUG INFORMATION WITH TRACE FLAGS: T0, T1
