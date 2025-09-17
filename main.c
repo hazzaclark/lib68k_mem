@@ -162,14 +162,14 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 void SHOW_MEMORY_MAPS(void)
 {
     printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
-    printf("---------------------------------------------------------------\n");
-    printf("START        END         SIZE    STATE  READS   WRITES  ACCESS\n");
-    printf("---------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------\n");
+    printf("START        END         SIZE    STATE  READS   WRITES  ACCESS  VIOLATIONS \n");
+    printf("---------------------------------------------------------------------------\n");
 
     for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
         M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
-        printf("0x%08X 0x%08X  %3d%s     %2s  %6u  %6u      %s\n",
+        printf("0x%08X 0x%08X  %3d%s     %2s  %6u  %6u      %s       %2u\n",
                 BUF->BASE,
                 BUF->BASE + BUF->SIZE - 1,
                 FORMAT_SIZE(BUF->SIZE), 
@@ -177,10 +177,11 @@ void SHOW_MEMORY_MAPS(void)
                 BUF->WRITE ? "RW" : "RO",
                 BUF->USAGE.READ_COUNT,
                 BUF->USAGE.WRITE_COUNT,
-                BUF->USAGE.ACCESSED ? "YES" : "NO");
+                BUF->USAGE.ACCESSED ? "YES" : "NO",
+                BUF->USAGE.VIOLATION);
     }
 
-    printf("---------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------\n");
 }
 
 /////////////////////////////////////////////////////
@@ -498,41 +499,18 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-//                      THE MAIN MEAT AND POTATOES
-//          EACH OF THESE WILL REPRESENT AN UNSIGNE INT VALUE   
-//                  FROM THERE, BEING SIGNED A DEFINER
-//          IN ACCORDANCE WITH THE ENUM (BASED ON THEIR BIT VALUE)
+//              EACH OF THESE WILL REPRESENT AN UNSIGNED INT VALUE   
+//                FROM THERE, BEING SIGNED A SIZE DEFINER
+//                  IN ACCORDANCE WITH AN ENUM VALUE
 ////////////////////////////////////////////////////////////////////////////////////////
 
-unsigned int M68K_READ_MEMORY_8(unsigned int ADDRESS)
-{
-    return MEMORY_READ(ADDRESS, MEM_SIZE_8);
-}
+unsigned int M68K_READ_MEMORY_8(unsigned int ADDRESS) { return MEMORY_READ(ADDRESS, MEM_SIZE_8); }
+unsigned int M68K_READ_MEMORY_16(unsigned int ADDRESS) { return MEMORY_READ(ADDRESS, MEM_SIZE_16); }
+unsigned int M68K_READ_MEMORY_32(unsigned int ADDRESS) { return MEMORY_READ(ADDRESS, MEM_SIZE_32); }
 
-unsigned int M68K_READ_MEMORY_16(unsigned int ADDRESS)
-{
-    return MEMORY_READ(ADDRESS, MEM_SIZE_16);
-}
-
-unsigned int M68K_READ_MEMORY_32(unsigned int ADDRESS)
-{
-    return MEMORY_READ(ADDRESS, MEM_SIZE_32);
-}
-
-void M68K_WRITE_MEMORY_8(unsigned int ADDRESS, uint8_t VALUE) 
-{
-    MEMORY_WRITE(ADDRESS, MEM_SIZE_8, VALUE);
-}
-
-void M68K_WRITE_MEMORY_16(unsigned int ADDRESS, uint16_t VALUE) 
-{
-    MEMORY_WRITE(ADDRESS, MEM_SIZE_16, VALUE);
-}
-
-void M68K_WRITE_MEMORY_32(unsigned int ADDRESS, uint32_t VALUE) 
-{
-    MEMORY_WRITE(ADDRESS, MEM_SIZE_32, VALUE);
-}
+void M68K_WRITE_MEMORY_8(unsigned int ADDRESS, uint8_t VALUE)  { MEMORY_WRITE(ADDRESS, MEM_SIZE_8, VALUE); }
+void M68K_WRITE_MEMORY_16(unsigned int ADDRESS, uint16_t VALUE)  { MEMORY_WRITE(ADDRESS, MEM_SIZE_16, VALUE); }
+void M68K_WRITE_MEMORY_32(unsigned int ADDRESS, uint32_t VALUE) { MEMORY_WRITE(ADDRESS, MEM_SIZE_32, VALUE); }
 
 // OF COURSE THESE ARE CHANGED IN LIB68K TO HAVE NO LOCAL ARGS
 // AS THE IMMEDIATE READ IS GOVERNED BY THE EA LOADED INTO MEMORY
@@ -578,26 +556,21 @@ int main(void)
     uint8_t TEST_8 = 0xAA;
     M68K_WRITE_MEMORY_8(0x1000, TEST_8);
     uint8_t READ_8 = M68K_READ_MEMORY_8(0x1000);
-    printf("8-BIT: WROTE: 0x%02X, READ: 0x%02X\n", TEST_8, READ_8);
 
     uint16_t TEST_16 = 0xBBCC;
     M68K_WRITE_MEMORY_16(0x1010, TEST_16);
     uint16_t READ_16 = M68K_READ_MEMORY_16(0x1010);
-    printf("16-BIT: WROTE: 0x%04X, READ: 0x%04X\n", TEST_16, READ_16);
 
     uint32_t TEST_32 = 0x134CA000;
     M68K_WRITE_MEMORY_32(0x1020, TEST_32);
     uint32_t READ_32 = M68K_READ_MEMORY_32(0x1020);
-    printf("32-BIT: WROTE: 0x%08X, READ: 0x%08X\n", TEST_32, READ_32);
 
     uint16_t IMM_16 = 0xFFFF;
     M68K_WRITE_MEMORY_16(0x1000, IMM_16);
     uint16_t IMM_READ_16 = M68K_READ_IMM_16(0x1000);
-    printf("16-BIT IMM: WROTE: 0x%04X, READ: 0x%04X\n", IMM_16, IMM_READ_16);
 
     uint32_t IMM_32 = 0xFFFFFFFF;
     M68K_WRITE_MEMORY_32(0x1030, IMM_32);
-    printf("32-BIT IMM: WROTE: 0x%04X\n", IMM_32);
 
     printf("\nTESTING WRITE PROTECTION\n");
     M68K_WRITE_MEMORY_32(0x400000, 0x42069);
