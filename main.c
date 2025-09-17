@@ -162,14 +162,14 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 void SHOW_MEMORY_MAPS(void)
 {
     printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
-    printf("---------------------------------------------------------------------------\n");
-    printf("START        END         SIZE    STATE  READS   WRITES  ACCESS  VIOLATIONS \n");
-    printf("---------------------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------------------\n");
+    printf("START        END         SIZE    STATE      READS   WRITES      ACCESS      VIOLATIONS \n");
+    printf("---------------------------------------------------------------------------------------\n");
 
     for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
         M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
-        printf("0x%08X 0x%08X  %3d%s     %2s  %6u  %6u      %s       %2u\n",
+        printf("0x%08X 0x%08X    %3d%s    %2s     %6u  %6u          %s           %u\n",
                 BUF->BASE,
                 BUF->BASE + BUF->SIZE - 1,
                 FORMAT_SIZE(BUF->SIZE), 
@@ -180,8 +180,8 @@ void SHOW_MEMORY_MAPS(void)
                 BUF->USAGE.ACCESSED ? "YES" : "NO",
                 BUF->USAGE.VIOLATION);
     }
-
-    printf("---------------------------------------------------------------------------\n");
+    
+    printf("---------------------------------------------------------------------------------------\n");
 }
 
 /////////////////////////////////////////////////////
