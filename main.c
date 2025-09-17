@@ -163,7 +163,7 @@ void SHOW_MEMORY_MAPS(void)
 {
     printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
     printf("---------------------------------------------------------------------------------------\n");
-    printf("START        END         SIZE    STATE      READS   WRITES      ACCESS      VIOLATIONS \n");
+    printf("START        END         SIZE    STATE      READS   WRITES      ACCESS     VIOLATIONS  \n");
     printf("---------------------------------------------------------------------------------------\n");
 
     for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
@@ -180,7 +180,7 @@ void SHOW_MEMORY_MAPS(void)
                 BUF->USAGE.ACCESSED ? "YES" : "NO",
                 BUF->USAGE.VIOLATION);
     }
-    
+
     printf("---------------------------------------------------------------------------------------\n");
 }
 
@@ -197,7 +197,7 @@ void SHOW_MEMORY_MAPS(void)
 #define         MEM_MAP_TRACE_HOOK              M68K_OPT_ON
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 #define         JUMP_HOOK                       M68K_OPT_ON
-#define         VERBOSE_TRACE_HOOK              M68K_OPT_OFF
+#define         VERBOSE_TRACE_HOOK              M68K_OPT_ON
 
 // TRACE VALIDATION HOOKS TO BE ABLE TO CONCLUSIVELY VALIDATE MEMORY READ AND WRITES
 // WHAT MAKES THESE TWO DIFFERENT IS THAT 
@@ -318,7 +318,7 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 
 static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 {
-    VERBOSE_TRACE("READING ADDRESS FROM 0x%08X (SIZE = %d)\n", ADDRESS, SIZE);
+    VERBOSE_TRACE("ATTEMPTING TO READ ADDRESS: 0x%08X (SIZE = %d)\n", ADDRESS, SIZE);
 
     // BOUND CHECKS FOR INVALID ADDRESSING
     if(ADDRESS > M68K_MAX_ADDR_END || ADDRESS > M68K_MAX_MEMORY_SIZE)
@@ -393,7 +393,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 {
     M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
 
-    VERBOSE_TRACE("WRITING TO ADDRESS 0x%X (SIZE = %d, VALUE = 0x%X)\n", ADDRESS, SIZE, VALUE);
+    VERBOSE_TRACE("ATTEMPTING WRITE TO ADDRESS: 0x%X (SIZE = %d, VALUE = 0x%X)\n", ADDRESS, SIZE, VALUE);
 
     // BOUND CHECKS FOR INVALID ADDRESSING
     if(ADDRESS > M68K_MAX_ADDR_END || ADDRESS > M68K_MAX_MEMORY_SIZE)
@@ -547,7 +547,7 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x00000, 0x7FFFF, false);
+    MEMORY_MAP(0x00000, 0x7FFFF, true);
 
     SHOW_MEMORY_MAPS();
 
