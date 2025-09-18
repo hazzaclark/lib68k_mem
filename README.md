@@ -3,12 +3,7 @@ Standalone Reference for validating Memory Functionality in lib68k
 
 # Motive:
 
-The following aims to act as a little, subsection of lib68k, to be able to validate and verify the efficiency and accuracy in terms of the Memory read and writes of my 68k Emulator.
-
-This doesn't aim to be anything special outside of serving to provide aid in subsequent developments without breaking the main functionality of my stuff.
-
-If my commits on lib68k are anything to go by, I have been scratching my head and wrestling with the Memory logic for as long as I can remember.
-Therefore, this aims to put those quarms to rest
+The following aims to act as a standalone reference for the implementation of the 68000's Memory Bus, as per the contents of lib68k. This repository serves to provide an isolation of said utility adjacent from the emulator itself; to be able to validate and verify the efficiency and accuracy in terms of core Memory Operations.
 
 <img width="1198" height="1087" alt="image" src="https://github.com/user-attachments/assets/288021fe-27c6-4ac8-b054-81dfdda21001" />
 
