@@ -5,7 +5,7 @@ Standalone Reference for validating Memory Functionality in lib68k
 
 The following aims to act as a standalone reference for the implementation of the 68000's Memory Bus, as per the contents of lib68k. 
 
-This repository serves to provide an isolation of said utility adjacent from the emulator itself; to be able to validate and verify the efficiency and accuracy in terms of core Memory Operations.
+This repository serves to provide an isolation of said utility adjacent from the emulator itself; to be able to validate and verify the efficiency and accuracy of core Memory Operations.
 
 <img width="1198" height="1087" alt="image" src="https://github.com/user-attachments/assets/288021fe-27c6-4ac8-b054-81dfdda21001" />
 
