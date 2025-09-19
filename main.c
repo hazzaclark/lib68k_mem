@@ -287,7 +287,7 @@ static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
         if(MEM_BASE->BUFFER == NULL)
         {
             VERBOSE_TRACE("UNALLOCATED BUFFER AT INDEX %d\n", INDEX);
-            continue;
+            return NULL;
         }
 
         // CHECK IF:
@@ -480,6 +480,8 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
         return;
     }
 
+    // DEFINE AND INITIALISE BUFFER-RELATED PARAMS
+    // ONLY ALLOCATE HOW MANY BUFFERS WE NEED BASED ON THE MAX
     M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[MEM_NUM_BUFFERS++];
     BUF->BASE = BASE;
     BUF->END = END;
