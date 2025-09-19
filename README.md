@@ -14,6 +14,30 @@ This repository serves to provide an isolation of said utility adjacent from the
 SET_TRACE_FLAGS(1, 0);
 ```
 
+## Basic Implemenation:
+
+Due to the flat-memory design and implementation of the 68000's Memory, it is a case of being able to delegate specific regions.
+
+Through this approach, this library aims to provide a simple means of initialising memory regions through ``MEMORY_MAP``, which leverages ``MEM_FIND`` to look through
+the respective buffers/regions, based on the buffer size and index, in conjunction with a max count (which can be altered and varied based on which implementation is required)
+
+```c
+// START, END, WRITEABLE
+MEMORY_MAP(0x00000, 0x7FFFF, true);
+```
+
+``MEM_FIND`` specifically utilises a struct as the return type to be able to iterate through each respective buffer/region based on a provided index.
+Leveraging such notation allows for the seamless implementation of creating memory regions with their provided args
+
+```c
+// ITERATE BASED ON MAX BUFFERS
+for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
+{
+     // GET A POINTER TO THE CURRENT MEMORY BUFFER
+     M68K_MEM_BUFFER* MEM_BASE = MEM_BUFFERS + INDEX;
+}
+``` 
+
 ## Features:
 
 Using the trace addressing space defined in lib68k, this isolated scheme allows for the validation of TRACE Level Addressing for handling pre-fetch
