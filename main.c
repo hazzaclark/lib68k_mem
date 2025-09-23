@@ -276,8 +276,6 @@ void SHOW_MEMORY_MAPS(void)
 
 static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 {
-    VERBOSE_TRACE("FOUND MEMORY: 0x%04X", ADDRESS);
-
     // ITERATE THROUGH ALL REGISTERED MEMORY BUFFERS
     for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
@@ -582,3 +580,4 @@ int main(void)
 
     return 0;
 }
+
