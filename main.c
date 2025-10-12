@@ -197,7 +197,7 @@ void SHOW_MEMORY_MAPS(void)
 #define         MEM_MAP_TRACE_HOOK              M68K_OPT_ON
 #define         MEM_TRACE_HOOK                  M68K_OPT_ON
 #define         JUMP_HOOK                       M68K_OPT_ON
-#define         VERBOSE_TRACE_HOOK              M68K_OPT_ON
+#define         VERBOSE_TRACE_HOOK              M68K_OPT_OFF
 
 // TRACE VALIDATION HOOKS TO BE ABLE TO CONCLUSIVELY VALIDATE MEMORY READ AND WRITES
 // WHAT MAKES THESE TWO DIFFERENT IS THAT 
@@ -206,12 +206,12 @@ void SHOW_MEMORY_MAPS(void)
 
 // HENCE WHY THE MEM TRACE NEEDS TO PROPERLY VALIDATE THE CONDITIONAL BEFOREHAND
 
-#if MEM_TRACE_HOOK == M68K_OPT_OFF
+#if MEM_TRACE_HOOK == M68K_OPT_ON
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) \
         do { \
             if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
-                printf("[TRACE] %c ADDR:0x%X SIZE:%d VALUE:0x%X\n", \
-                      (char)(OP), (ADDR), (SIZE), (VAL)); \
+                printf("[TRACE] %s ADDR:0x%X SIZE:%d VALUE:0x%X\n", \
+                      (OP), (ADDR), (SIZE), (VAL)); \
         } while(0)
 #else
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
@@ -276,6 +276,8 @@ void SHOW_MEMORY_MAPS(void)
 
 static M68K_MEM_BUFFER* MEM_FIND(uint32_t ADDRESS)
 {
+    VERBOSE_TRACE("FOUND MEMORY: 0x%04X", ADDRESS);
+
     // ITERATE THROUGH ALL REGISTERED MEMORY BUFFERS
     for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
@@ -373,7 +375,7 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
                 MEM_RETURN = *MEM_PTR;
                 break;
         }
-        MEM_TRACE(MEM_READ, ADDRESS, SIZE, MEM_RETURN);
+        MEM_TRACE("[READ]", ADDRESS, SIZE, MEM_RETURN);
         return MEM_RETURN;
     }
 
@@ -381,7 +383,7 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 
 MALFORMED_READ:
     MEM_ERROR(MEM_ERR, MEM_ERR_BAD_READ, SIZE, "ADDRESS: 0x%08X", ADDRESS);
-    MEM_TRACE(MEM_INVALID_READ, ADDRESS, SIZE, ~(uint32_t)0);
+    MEM_TRACE("[INVALID READ]", ADDRESS, SIZE, ~(uint32_t)0);
     return 0;
 }
 
@@ -432,7 +434,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
         MEM_BASE->USAGE.ACCESSED = true;
 
         uint8_t* MEM_PTR = MEM_BASE->BUFFER + OFFSET;
-        MEM_TRACE(MEM_WRITE, ADDRESS, SIZE, VALUE);
+        MEM_TRACE("[WRITE]", ADDRESS, SIZE, VALUE);
 
         switch (SIZE)
         {
@@ -459,7 +461,7 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
 
 MALFORMED_WRITE:
     MEM_ERROR(MEM_ERR, MEM_ERR_BAD_WRITE, SIZE, "VALUE: 0x%0X, ADDRESS: 0x%0X", VALUE, ADDRESS);
-    MEM_TRACE(MEM_INVALID_WRITE, ADDRESS, SIZE, VALUE);
+    MEM_TRACE("[INVALID WRITE]", ADDRESS, SIZE, VALUE);
 }
 
 static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE) 
@@ -580,4 +582,3 @@ int main(void)
 
     return 0;
 }
-
