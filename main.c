@@ -98,8 +98,11 @@ typedef struct
 {
     uint32_t READ_COUNT;
     uint32_t WRITE_COUNT;
+    uint32_t MOVE_COUNT;
     uint32_t LAST_READ;
     uint32_t LAST_WRITE;
+    uint32_t LAST_MOVE_SRC;
+    uint32_t LAST_MOVE_DEST;
     uint32_t VIOLATION;
     bool ACCESSED;
 
@@ -162,14 +165,14 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 void SHOW_MEMORY_MAPS(void)
 {
     printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
-    printf("---------------------------------------------------------------------------------------\n");
-    printf("START        END         SIZE    STATE      READS   WRITES      ACCESS     VIOLATIONS  \n");
-    printf("---------------------------------------------------------------------------------------\n");
+    printf("----------------------------------------------------------------------------------------------\n");
+    printf("START        END         SIZE    STATE      READS   WRITES  MOVES      ACCESS     VIOLATIONS  \n");
+    printf("----------------------------------------------------------------------------------------------\n");
 
     for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
         M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
-        printf("0x%08X 0x%08X    %3d%s    %2s     %6u  %6u          %s           %u\n",
+        printf("0x%08X 0x%08X    %3d%s    %2s     %6u  %6u  %6u          %s           %u\n",
                 BUF->BASE,
                 BUF->BASE + BUF->SIZE - 1,
                 FORMAT_SIZE(BUF->SIZE), 
@@ -177,11 +180,12 @@ void SHOW_MEMORY_MAPS(void)
                 BUF->WRITE ? "RW" : "RO",
                 BUF->USAGE.READ_COUNT,
                 BUF->USAGE.WRITE_COUNT,
+                BUF->USAGE.MOVE_COUNT,
                 BUF->USAGE.ACCESSED ? "YES" : "NO",
                 BUF->USAGE.VIOLATION);
     }
 
-    printf("---------------------------------------------------------------------------------------\n");
+    printf("----------------------------------------------------------------------------------------------\n");
 }
 
 /////////////////////////////////////////////////////
@@ -215,6 +219,17 @@ void SHOW_MEMORY_MAPS(void)
         } while(0)
 #else
     #define MEM_TRACE(OP, ADDR, SIZE, VAL) ((void)0)
+#endif
+
+#if MEM_TRACE_HOOK == M68K_OPT_ON
+    #define MEM_MOVE_TRACE(SRC, DST, SIZE, COUNT) \
+        do { \
+            if (IS_TRACE_ENABLED(M68K_OPT_BASIC) && CHECK_TRACE_CONDITION()) \
+                printf("[TRACE] [MOVE] SRC:0x%08X -> DEST:0x%08X | SIZE:%d BYTES | COUNT:%u\n", \
+                      (SRC), (DST), (SIZE)/8, (COUNT)); \
+        } while(0)
+#else
+    #define MEM_MOVE_TRACE(SRC, DST, SIZE, COUNT) ((void)0)
 #endif
 
 #if MEM_MAP_TRACE_HOOK == M68K_OPT_ON
@@ -464,6 +479,68 @@ MALFORMED_WRITE:
     MEM_TRACE("[INVALID WRITE]", ADDRESS, SIZE, VALUE);
 }
 
+// MEMORY MOVE OPERATIONS - HANDLES THE SPECIFICS BETWEEN SOURCE
+// AND DESTINATION OPERATIONS
+//
+// LOOKS TO FIND THE SOURCE AND DESTINATION OPERANDS TO PROPERLY
+// VALIDATE THEIR EXECUTION
+static void MEMORY_MOVE(uint32_t SRC, uint32_t DEST, uint32_t SIZE, uint32_t COUNT)
+{
+    VERBOSE_TRACE("MOVING %u BYTES FROM 0x%08X TO 0x%08X\n", COUNT, SRC, DEST);
+
+    // FIND BOTH OF THE CURRENT OPERANDS WITHIN THE OPERATION
+
+    M68K_MEM_BUFFER* SRC_BUFFER = MEM_FIND(SRC);
+    M68K_MEM_BUFFER* DEST_BUFFER = MEM_FIND(DEST);
+
+    if(SRC_BUFFER == NULL)
+    {
+        MEM_ERROR(MEM_MOVE, MEM_ERR_UNMAPPED, SIZE, "NO SOURCE BUFFER FOUND FOR ADDRESS: 0x%08X", SRC);
+        return;
+    }
+
+    if(DEST_BUFFER == NULL)
+    {
+        MEM_ERROR(MEM_MOVE, MEM_ERR_UNMAPPED, SIZE, "NO DESTINATION BUFFER FOUND FOR ADDRESS: 0x%08X", DEST);
+        return;
+    }
+
+    // CAN WE WRITE TO SAID DESTINATION?!
+    // ASSUME THAT WE HAVE THE PROPER CONDITIONS FOR THE HIGH BOUND OF THE EA
+    // THAT OF WHICH ENCOMPASSESS THE WRITE CONDITION
+
+    if(!DEST_BUFFER->WRITE)
+    {
+        DEST_BUFFER->USAGE.VIOLATION++;
+        MEM_ERROR(MEM_MOVE, MEM_ERR_READONLY, SIZE, "MOVE ATTEMPT TO READ-ONLY MEMORY: 0x%08X, VIOLATION: #%u", DEST, DEST_BUFFER->USAGE.VIOLATION);
+    }
+
+    // GET THE ALL ENCOMPASSING SIZE OF THE OPERATION
+    uint32_t TRANSFER_SIZE = SIZE / 8;
+
+    // DETERMINE THE CONCURRENT BYTES IS REQUIRED PER EACH OPERATION
+    // SIZE IS ALL VARIABLE BASED ON THE DISTANCE BETWEEN INDIRECT AND EA
+    for(uint32_t INDEX = 0; INDEX < COUNT; INDEX += TRANSFER_SIZE)
+    {
+        uint32_t CURRENT_SRC = SRC + INDEX;
+        uint32_t CURRENT_DEST = DEST + INDEX;
+
+        // READ FROM THE CURRENT SORUCE AGAINST THE SIZE
+        // OF THE OPERATION
+        uint32_t SRC_READ = MEMORY_READ(CURRENT_SRC, SIZE);
+
+        // WRITE TO DESTINATION
+        MEMORY_WRITE(CURRENT_DEST, SIZE, SRC_READ);
+    }
+
+    SRC_BUFFER->USAGE.MOVE_COUNT++;
+    SRC_BUFFER->USAGE.LAST_MOVE_SRC = SRC;
+    DEST_BUFFER->USAGE.MOVE_COUNT++;
+    DEST_BUFFER->USAGE.LAST_MOVE_DEST = DEST;
+
+    MEM_MOVE_TRACE(SRC, DEST, SIZE, COUNT);
+} 
+
 static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE) 
 {
     uint32_t SIZE = (END - BASE) + 1;
@@ -487,6 +564,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
     BUF->END = END;
     BUF->SIZE = SIZE;
     BUF->WRITE = WRITABLE;
+    BUF->USAGE.MOVE_COUNT = 0;
     BUF->BUFFER = malloc(SIZE);
     memset(BUF->BUFFER, 0, SIZE);
 
@@ -506,13 +584,17 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
 //                  IN ACCORDANCE WITH AN ENUM VALUE
 ////////////////////////////////////////////////////////////////////////////////////////
 
-unsigned int M68K_READ_MEMORY_8(unsigned int ADDRESS) { return MEMORY_READ(ADDRESS, MEM_SIZE_8); }
+unsigned int M68K_READ_MEMORY_8(unsigned int ADDRESS)  { return MEMORY_READ(ADDRESS, MEM_SIZE_8); }
 unsigned int M68K_READ_MEMORY_16(unsigned int ADDRESS) { return MEMORY_READ(ADDRESS, MEM_SIZE_16); }
 unsigned int M68K_READ_MEMORY_32(unsigned int ADDRESS) { return MEMORY_READ(ADDRESS, MEM_SIZE_32); }
 
-void M68K_WRITE_MEMORY_8(unsigned int ADDRESS, uint8_t VALUE)  { MEMORY_WRITE(ADDRESS, MEM_SIZE_8, VALUE); }
-void M68K_WRITE_MEMORY_16(unsigned int ADDRESS, uint16_t VALUE)  { MEMORY_WRITE(ADDRESS, MEM_SIZE_16, VALUE); }
+void M68K_WRITE_MEMORY_8(unsigned int ADDRESS, uint8_t VALUE)   { MEMORY_WRITE(ADDRESS, MEM_SIZE_8, VALUE); }
+void M68K_WRITE_MEMORY_16(unsigned int ADDRESS, uint16_t VALUE) { MEMORY_WRITE(ADDRESS, MEM_SIZE_16, VALUE); }
 void M68K_WRITE_MEMORY_32(unsigned int ADDRESS, uint32_t VALUE) { MEMORY_WRITE(ADDRESS, MEM_SIZE_32, VALUE); }
+
+void M68K_MOVE_MEMORY_8(unsigned SRC, unsigned DEST, unsigned COUNT)    { MEMORY_MOVE(SRC, DEST, MEM_SIZE_8, COUNT); }
+void M68K_MOVE_MEMORY_16(unsigned SRC, unsigned DEST, unsigned COUNT)   { MEMORY_MOVE(SRC, DEST, MEM_SIZE_16, COUNT); }
+void M68K_MOVE_MEMORY_32(unsigned SRC, unsigned DEST, unsigned COUNT)   { MEMORY_MOVE(SRC, DEST, MEM_SIZE_32, COUNT); }
 
 // OF COURSE THESE ARE CHANGED IN LIB68K TO HAVE NO LOCAL ARGS
 // AS THE IMMEDIATE READ IS GOVERNED BY THE EA LOADED INTO MEMORY
@@ -576,6 +658,13 @@ int main(void)
 
     printf("\nTESTING WRITE PROTECTION\n");
     M68K_WRITE_MEMORY_32(0x400000, 0x42069);
+
+    printf("\nTESTING MOVE OPERATIONS\n");
+    uint8_t SRC = 0x20;
+    uint8_t DEST = 0x40;
+    unsigned COUNT = 8;
+
+    M68K_MOVE_MEMORY_8(SRC, DEST, COUNT);
 
     M68K_STOPPED = 1;
     SHOW_MEMORY_MAPS();
