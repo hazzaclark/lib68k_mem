@@ -56,6 +56,9 @@ static unsigned int M68K_STOPPED;
                 (SIZE) >= MB_TO_BYTES ? "MB" : \
                 (SIZE) >= KB_TO_BYTES ? "KB" : "B"
 
+#define         M68K_BUS_ALIGNMENT(ADDRESS, SIZE) \
+                (((SIZE) == MEM_SIZE_8) ? true : !((ADDRESS) & 1))
+
 /////////////////////////////////////////////////////
 //        BASE MEMORY VALIDATOR STRUCTURES
 /////////////////////////////////////////////////////
@@ -94,7 +97,9 @@ typedef enum
     MEM_ERR_RESERVED,
     MEM_ERR_OVERFLOW,
     MEM_ERR_BAD_READ,
-    MEM_ERR_BAD_WRITE
+    MEM_ERR_BAD_WRITE,
+    MEM_ERR_BUS,
+    MEM_ERR_ALIGN
 
 } M68K_MEM_ERROR;
 
@@ -384,6 +389,13 @@ static uint32_t MEMORY_READ(uint32_t ADDRESS, uint32_t SIZE)
 {
     VERBOSE_TRACE("ATTEMPTING TO READ ADDRESS: 0x%08X (SIZE = %d)\n", ADDRESS, SIZE);
 
+    // CHECK FOR POSSIBLE ALIGNMENT ISSUES WITHIN THE BUS HANDLER
+    if(!M68K_BUS_ALIGNMENT(ADDRESS, SIZE))
+    {
+        MEM_ERROR(MEM_ERR, MEM_ERR_ALIGN, SIZE, "MISALIGNED ADDRESS AT: 0x%08X", ADDRESS);
+        goto MALFORMED_READ;
+    }
+
     // BOUND CHECKS FOR INVALID ADDRESSING
     if(ADDRESS > M68K_MAX_ADDR_END || ADDRESS > M68K_MAX_MEMORY_SIZE)
     {
@@ -458,6 +470,13 @@ static void MEMORY_WRITE(uint32_t ADDRESS, uint32_t SIZE, uint32_t VALUE)
     M68K_MEM_BUFFER* MEM_BASE = MEM_FIND(ADDRESS);
 
     VERBOSE_TRACE("ATTEMPTING WRITE TO ADDRESS: 0x%X (SIZE = %d, VALUE = 0x%X)\n", ADDRESS, SIZE, VALUE);
+
+    // CHECK FOR POSSIBLE ALIGNMENT ISSUES WITHIN THE BUS HANDLER
+    if(!M68K_BUS_ALIGNMENT(ADDRESS, SIZE))
+    {
+        MEM_ERROR(MEM_ERR, MEM_ERR_ALIGN, SIZE, "MISALIGNED ADDRESS AT: 0x%08X", ADDRESS);
+        goto MALFORMED_WRITE;
+    }
 
     // BOUND CHECKS FOR INVALID ADDRESSING
     if(ADDRESS > M68K_MAX_ADDR_END || ADDRESS > M68K_MAX_MEMORY_SIZE)
@@ -590,7 +609,7 @@ static void MEMORY_MOVE(uint32_t SRC, uint32_t DEST, uint32_t SIZE, uint32_t COU
     MEM_MOVE_TRACE(SRC, DEST, SIZE, COUNT);
 } 
 
-static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE) 
+static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE, bool ENABLE_BERR) 
 {
     uint32_t SIZE = (END - BASE) + 1;
 
@@ -613,7 +632,7 @@ static void MEMORY_MAP(uint32_t BASE, uint32_t END, bool WRITABLE)
     BUF->END = END;
     BUF->SIZE = SIZE;
     BUF->WRITE = WRITABLE;
-    BUF->USAGE.MOVE_COUNT = 0;
+    BUF->BERR = ENABLE_BERR;
     BUF->BUFFER = malloc(SIZE);
     memset(BUF->BUFFER, 0, SIZE);
 
@@ -644,6 +663,7 @@ void M68K_WRITE_MEMORY_32(unsigned int ADDRESS, uint32_t VALUE) { MEMORY_WRITE(A
 void M68K_MOVE_MEMORY_8(unsigned SRC, unsigned DEST, unsigned COUNT)    { MEMORY_MOVE(SRC, DEST, MEM_SIZE_8, COUNT); }
 void M68K_MOVE_MEMORY_16(unsigned SRC, unsigned DEST, unsigned COUNT)   { MEMORY_MOVE(SRC, DEST, MEM_SIZE_16, COUNT); }
 void M68K_MOVE_MEMORY_32(unsigned SRC, unsigned DEST, unsigned COUNT)   { MEMORY_MOVE(SRC, DEST, MEM_SIZE_32, COUNT); }
+
 // OF COURSE THESE ARE CHANGED IN LIB68K TO HAVE NO LOCAL ARGS
 // AS THE IMMEDIATE READ IS GOVERNED BY THE EA LOADED INTO MEMORY
 
@@ -679,8 +699,8 @@ int main(void)
     SET_TRACE_FLAGS(1,0);
     SHOW_TRACE_STATUS();
 
-    MEMORY_MAP(0x00000, 0x7FFFF, true);
-    MEMORY_MAP(0x080000, 0x0FFFFF, false);  
+    MEMORY_MAP(0x00000, 0x7FFFF, true, true);
+    MEMORY_MAP(0x080000, 0x0FFFFF, false, false);  
 
     SHOW_MEMORY_MAPS();
 
