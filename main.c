@@ -98,7 +98,7 @@ typedef enum
     MEM_ERR_OVERFLOW,
     MEM_ERR_BAD_READ,
     MEM_ERR_BAD_WRITE,
-    MEM_ERR_BUS,
+    MEM_ERR_BERR,
     MEM_ERR_ALIGN
 
 } M68K_MEM_ERROR;
