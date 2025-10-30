@@ -134,6 +134,7 @@ typedef struct
     uint32_t LAST_MOVE_SRC;
     uint32_t LAST_MOVE_DEST;
     uint32_t VIOLATION;
+    uint32_t BUS_ERROR;
     bool ACCESSED;
 
 } M68K_MEM_USAGE;
@@ -145,6 +146,7 @@ typedef struct
     uint32_t SIZE;
     uint8_t* BUFFER;
     bool WRITE;
+    bool BERR;
     M68K_MEM_USAGE USAGE;
 
 } M68K_MEM_BUFFER;
@@ -157,6 +159,7 @@ static M68K_MEM_BUFFER MEM_BUFFERS[M68K_MAX_BUFFERS];
 static unsigned MEM_NUM_BUFFERS = 0;
 static bool TRACE_ENABLED = true;
 static uint8_t ENABLED_FLAGS = M68K_OPT_FLAGS;
+static M68K_BERR_STATE BERR_STATE = {0};
 
 static const char* M68K_MEM_ERR[] = 
 {
@@ -170,7 +173,21 @@ static const char* M68K_MEM_ERR[] =
     "MEMORY VIOLATES A RESERVED RANGE",
     "MEMORY OVERFLOW",
     "MEMORY ENCOUNTERED A BAD READ",
-    "MEMORY ENCOUNTERED A BAD WRITE"
+    "MEMORY ENCOUNTERED A BAD WRITE",
+    "BUS HAS THROWN AN ERROR EXCEPTION",
+    "BUS HAS AN ALIGNMENT ERROR"
+};
+
+// SPECIFC ERROR HANDLERS FOR THE BUS ERRRO
+static const char* M68K_BERR_ERR[] = 
+{
+    "NONE",
+    "UNMAPPED READ",
+    "UNMAPPED WRITE",
+    "READONLY WRITE",
+    "ALIGNMENT ERROR",
+    "BOUNDS VIOLATION",
+    "BUS TIMEOUT"
 };
 
 /////////////////////////////////////////////////////
@@ -195,27 +212,29 @@ bool IS_TRACE_ENABLED(uint8_t FLAG)
 void SHOW_MEMORY_MAPS(void)
 {
     printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
-    printf("----------------------------------------------------------------------------------------------\n");
-    printf("START        END         SIZE    STATE      READS   WRITES   MOVES      ACCESS     VIOLATIONS  \n");
-    printf("----------------------------------------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------------------------------------\n");
+    printf("START        END         SIZE    BERR  STATE   READS   WRITES  MOVES   ACCESS  VIOLATIONS   BUS_ERRORS\n");
+    printf("------------------------------------------------------------------------------------------------------\n");
 
     for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
         M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
-        printf("0x%08X 0x%08X    %3d%s    %2s     %6u  %6u  %6u          %s             %u\n",
+        printf("0x%08X 0x%08X   %4d%s   %3s   %2s  %7u  %7u %6u      %3s     %4u        %6u\n",
                 BUF->BASE,
                 BUF->BASE + BUF->SIZE - 1,
                 FORMAT_SIZE(BUF->SIZE), 
                 FORMAT_UNIT(BUF->SIZE),
+                BUF->BERR ? "ON" : "OFF",
                 BUF->WRITE ? "RW" : "RO",
                 BUF->USAGE.READ_COUNT,
                 BUF->USAGE.WRITE_COUNT,
                 BUF->USAGE.MOVE_COUNT,
                 BUF->USAGE.ACCESSED ? "YES" : "NO",
-                BUF->USAGE.VIOLATION);
+                BUF->USAGE.VIOLATION,
+                BUF->USAGE.BUS_ERROR);
     }
 
-    printf("----------------------------------------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------------------------------------\n");
 }
 
 /////////////////////////////////////////////////////
