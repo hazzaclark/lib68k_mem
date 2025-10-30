@@ -45,6 +45,9 @@ static unsigned int M68K_STOPPED;
 
 #define         M68K_LSB_MASK                   0xFF
 
+#define         M68K_BERR                       2
+#define         M68K_BERR_ADDR                  (M68K_BERR * 4)
+
 #define         FORMAT_SIZE(SIZE) \
                 (SIZE) >= MB_TO_BYTES ? (SIZE)/MB_TO_BYTES : \
                 (SIZE) >= KB_TO_BYTES ? (SIZE)/KB_TO_BYTES : (SIZE)
@@ -66,7 +69,8 @@ typedef enum
     MEM_MAP = 'M',
     MEM_UNMAP = 'U',
     MEM_MOVE = 'O',
-    MEM_ERR = 'E'
+    MEM_ERR = 'E',
+    MEM_BUS = 'B'
 
 } M68K_MEM_OP;
 
@@ -93,6 +97,32 @@ typedef enum
     MEM_ERR_BAD_WRITE
 
 } M68K_MEM_ERROR;
+
+typedef enum
+{
+    BERR_NONE,
+    BERR_UNMAPPED_READ,
+    BERR_UNMAPPED_WRITE,
+    BERR_READONLY,
+    BERR_ALIGN,
+    BERR_BOUNDS,
+    BERR_TIMEOUT
+    
+} M68K_BERR_TYPE;
+
+typedef struct
+{
+    bool ACTIVE;                // 0x00
+    bool HALT_LINE;             // 0x01
+    uint32_t CURRENT_ADDRESS;   // 0x05
+    uint32_t CURRENT_PC;        // 0x09
+    uint32_t ACCESS_SIZE;       // 0x0D
+    uint32_t FAULT_COUNT;       // 0x11
+
+    M68K_BERR_TYPE TYPE;        // 0x15
+    M68K_MEM_OP OP;             // 0x19
+
+} M68K_BERR_STATE;
 
 typedef struct
 {
@@ -166,13 +196,13 @@ void SHOW_MEMORY_MAPS(void)
 {
     printf("\n%s MEMORY MAPS:\n", M68K_STOPPED ? "AFTER" : "BEFORE");
     printf("----------------------------------------------------------------------------------------------\n");
-    printf("START        END         SIZE    STATE      READS   WRITES  MOVES      ACCESS     VIOLATIONS  \n");
+    printf("START        END         SIZE    STATE      READS   WRITES   MOVES      ACCESS     VIOLATIONS  \n");
     printf("----------------------------------------------------------------------------------------------\n");
 
     for (unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
     {
         M68K_MEM_BUFFER* BUF = &MEM_BUFFERS[INDEX];
-        printf("0x%08X 0x%08X    %3d%s    %2s     %6u  %6u  %6u          %s           %u\n",
+        printf("0x%08X 0x%08X    %3d%s    %2s     %6u  %6u  %6u          %s             %u\n",
                 BUF->BASE,
                 BUF->BASE + BUF->SIZE - 1,
                 FORMAT_SIZE(BUF->SIZE), 
@@ -595,7 +625,6 @@ void M68K_WRITE_MEMORY_32(unsigned int ADDRESS, uint32_t VALUE) { MEMORY_WRITE(A
 void M68K_MOVE_MEMORY_8(unsigned SRC, unsigned DEST, unsigned COUNT)    { MEMORY_MOVE(SRC, DEST, MEM_SIZE_8, COUNT); }
 void M68K_MOVE_MEMORY_16(unsigned SRC, unsigned DEST, unsigned COUNT)   { MEMORY_MOVE(SRC, DEST, MEM_SIZE_16, COUNT); }
 void M68K_MOVE_MEMORY_32(unsigned SRC, unsigned DEST, unsigned COUNT)   { MEMORY_MOVE(SRC, DEST, MEM_SIZE_32, COUNT); }
-
 // OF COURSE THESE ARE CHANGED IN LIB68K TO HAVE NO LOCAL ARGS
 // AS THE IMMEDIATE READ IS GOVERNED BY THE EA LOADED INTO MEMORY
 
@@ -632,6 +661,7 @@ int main(void)
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x00000, 0x7FFFF, true);
+    MEMORY_MAP(0x080000, 0x0FFFFF, false);  
 
     SHOW_MEMORY_MAPS();
 
