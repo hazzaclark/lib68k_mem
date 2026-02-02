@@ -54,6 +54,32 @@ if(MAPPED > M68K_MAX_MEMORY_SIZE)
 }
 ```
 
+```
+[hazza@hazza lib68k_mem]$ ./a.out 
+======================================
+HARRY CLARK - LIB68K MEMORY VALIDATOR
+======================================
+
+TRACE CONFIG:
+  BASIC:            ENABLED
+  VERBOSE:          DISABLED
+  DEVICE TRACES:    DISABLED
+  T0 FLAG:          ON  (SHIFT: 0x08)
+  T1 FLAG:          OFF (SHIFT: 0x10)
+  T0 ACTIVE:        YES
+  T1 ACTIVE:        NO
+
+[TRACE] M -> START:0x00000000 END:0x00FFFFFF SIZE:16MB
+[ERROR] -> MEMORY OUT OF BOUNDS [SIZE: 16777216]: TOTAL MAPPED SIZE: (32MB) EXCEEDS THE BUS LIMIT
+
+BEFORE MEMORY MAPS:
+------------------------------------------------------------------------------------------------------
+START        END         SIZE    BERR  STATE   READS   WRITES  MOVES   ACCESS  VIOLATIONS   BUS_ERRORS
+------------------------------------------------------------------------------------------------------
+0x00000000 0x00FFFFFF     16MB    ON   RW        0        0      0       NO        0             0
+------------------------------------------------------------------------------------------------------
+``` 
+
 ## Features:
 
 Using the trace addressing space defined in lib68k, this isolated scheme allows for the validation of TRACE Level Addressing for handling pre-fetch
