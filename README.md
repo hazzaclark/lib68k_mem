@@ -55,6 +55,7 @@ if(MAPPED > M68K_MAX_MEMORY_SIZE)
 ```
 
 ```
+[hazza@hazza lib68k_mem]$ gcc main.c -DFORCE_UNSAFE_REGIONS=1
 [hazza@hazza lib68k_mem]$ ./a.out 
 ======================================
 HARRY CLARK - LIB68K MEMORY VALIDATOR
@@ -70,7 +71,7 @@ TRACE CONFIG:
   T1 ACTIVE:        NO
 
 [TRACE] M -> START:0x00000000 END:0x00FFFFFF SIZE:16MB
-[ERROR] -> MEMORY OUT OF BOUNDS [SIZE: 16777216]: TOTAL MAPPED SIZE: (32MB) EXCEEDS THE BUS LIMIT
+[ERROR] -> MEMORY OUT OF BOUNDS [SIZE: 0x1000000]: TOTAL MAPPED SIZE: (32MB) EXCEEDS THE BUS LIMIT
 
 BEFORE MEMORY MAPS:
 ------------------------------------------------------------------------------------------------------
