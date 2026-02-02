@@ -59,6 +59,12 @@ static unsigned int M68K_STOPPED;
 #define         M68K_BUS_ALIGNMENT(ADDRESS, SIZE) \
                 (((SIZE) == MEM_SIZE_8) ? true : !((ADDRESS) & 1))
 
+// 02/02/26 - ADDING THIS HERE FOR DEBUGGING AFTER RECENT DISCOVERY
+
+#ifndef         FORCE_UNSAFE_REGIONS
+    #define     FORCE_UNSAFE_REGIONS         M68K_OPT_OFF
+#endif
+
 /////////////////////////////////////////////////////
 //        BASE MEMORY VALIDATOR STRUCTURES
 /////////////////////////////////////////////////////
@@ -303,7 +309,7 @@ void SHOW_MEMORY_MAPS(void)
 #define MEM_ERROR(ERROR_CODE, SIZE, MSG, ...) \
     do { \
         if (IS_TRACE_ENABLED(M68K_OPT_VERB) && CHECK_TRACE_CONDITION()) \
-            printf("[ERROR] -> %-18s [SIZE: %d]: " MSG "\n", \
+            printf("[ERROR] -> %-18s [SIZE: 0x%X]: " MSG "\n", \
                 M68K_MEM_ERR[ERROR_CODE], \
                 (int)(SIZE), ##__VA_ARGS__); \
     } while(0)
@@ -778,7 +784,10 @@ int main(void)
     SHOW_TRACE_STATUS();
 
     MEMORY_MAP(0x000000, 0xFFFFFF, true, true);
+
+    #if FORCE_UNSAFE_REGIONS == M68K_OPT_ON
     MEMORY_MAP(0x000000, 0xFFFFFF, true, true);
+    #endif
 
     SHOW_MEMORY_MAPS();
 
