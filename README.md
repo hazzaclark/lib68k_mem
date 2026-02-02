@@ -22,8 +22,8 @@ Through this approach, this library aims to provide a simple means of initialisi
 the respective buffers/regions, based on the buffer size and index, in conjunction with a max count (which can be altered and varied based on which implementation is required)
 
 ```c
-// START, END, WRITEABLE
-MEMORY_MAP(0x00000, 0x7FFFF, true);
+// START, END, WRITEABLE, USES BUS ERROR
+MEMORY_MAP(0x00000, 0x7FFFF, true, true);
 ```
 
 ``MEM_FIND`` specifically utilises a struct as the return type to be able to iterate through each respective buffer/region based on a provided index.
@@ -36,7 +36,23 @@ for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
      // GET A POINTER TO THE CURRENT MEMORY BUFFER
      M68K_MEM_BUFFER* MEM_BASE = MEM_BUFFERS + INDEX;
 }
-``` 
+```
+
+In addition to the checks provided for Buffer allocation, assuming a situation where the Bus Limit were to be exceeded, any and all Buffers contributing to the inflated size are caught and go unallocated - preventing worst case scenarios of buffer overflows
+
+```c
+for(unsigned INDEX = 0; INDEX < MEM_NUM_BUFFERS; INDEX++)
+{
+     MAPPED += MEM_BUFFERS[INDEX].SIZE;
+}
+
+if(MAPPED > M68K_MAX_MEMORY_SIZE)
+{
+     MEM_ERROR(MEM_ERR_BOUNDS, SIZE, "TOTAL MAPPED SIZE: (%d%s) EXCEEDS THE BUS LIMIT", 
+            FORMAT_SIZE(MAPPED), FORMAT_UNIT(MAPPED));
+            return;
+}
+```
 
 ## Features:
 
