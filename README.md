@@ -1,5 +1,5 @@
 # lib68k_mem
-Standalone Reference for validating Memory Functionality in lib68k
+Standalone Utility for emulating the 68000's Memory Model
 
 # Motive:
 
